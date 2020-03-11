@@ -2,9 +2,11 @@
 
  
 import java.io.BufferedReader;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.Socket;
 import java.net.URL;
 /**
  * @author Arpit Mandliya
@@ -28,34 +30,40 @@ public class HttpURLConnectionExample {
  // HTTP GET request
  private void sendingGetRequest() throws Exception {
  
-  String urlString = " http://www.example.com";
-  
-  URL url = new URL(urlString);
-  HttpURLConnection con = (HttpURLConnection) url.openConnection();
+  String url = " http://www.example.com";
+  String str="",str2="";  
+  //URL url = new URL(urlString);
+  // HttpURLConnection con = (HttpURLConnection) url.openConnection();
+  Socket s=new Socket("http://www.example.com",80);
+  //// By default it is GET request
+  //con.setRequestMethod("GET");
+  DataOutputStream dout=new DataOutputStream(s.getOutputStream());  
+  dout.writeUTF("GET /home HTTP/1.1");
+  DataInputStream din=new DataInputStream(s.getInputStream());  
+  str2=din.readUTF();  
+  System.out.println("Server says: "+str2);  
+
+  ////add request header
+  // con.setRequestProperty("User-Agent", USER_AGENT);
  
-  // By default it is GET request
-  con.setRequestMethod("GET");
- 
-  //add request header
-  con.setRequestProperty("User-Agent", USER_AGENT);
- 
-  int responseCode = con.getResponseCode();
+  //int responseCode = con.getResponseCode();
   System.out.println("Sending get request : "+ url);
-  System.out.println("Response code : "+ responseCode);
+//  System.out.println("Response code : "+ responseCode);
  
   // Reading response from input Stream
-  BufferedReader in = new BufferedReader(
-          new InputStreamReader(con.getInputStream()));
-  String output;
-  StringBuffer response = new StringBuffer();
+ // BufferedReader in = new BufferedReader(
+   //       new InputStreamReader(s.getInputStream()));
+  //String output;
+  //StringBuffer response = new StringBuffer();
  
-  while ((output = in.readLine()) != null) {
-   response.append(output);
-  }
-  in.close();
- 
+ // while ((output = in.readLine()) != null) {
+  // response.append(output);
+  //}
+  //in.close();
+  dout.close();  
+	s.close();  
   //printing result from response
-  System.out.println(response.toString());
+ // System.out.println(response.toString());
  
  }
  
@@ -99,4 +107,22 @@ public class HttpURLConnectionExample {
   //printing result from response
   System.out.println(response.toString());
  }
+ public static void Get(String args[])throws Exception{  
+		Socket s=new Socket("http://www.example.com",80);  
+		DataInputStream din=new DataInputStream(s.getInputStream());  
+		DataOutputStream dout=new DataOutputStream(s.getOutputStream());  
+		BufferedReader br=new BufferedReader(new InputStreamReader(System.in));  
+		  
+		String str="",str2="";  
+		while(!str.equals("stop")){  
+		str=br.readLine();  
+		dout.writeUTF(str);  
+		dout.flush();  
+		str2=din.readUTF();  
+		System.out.println("Server says: "+str2);  
+		}  
+		  
+		dout.close();  
+		s.close();  
+	}
 }
