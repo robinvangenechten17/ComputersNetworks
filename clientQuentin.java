@@ -97,16 +97,16 @@ public class Client {
 			    BufferedReader keyboardInput = new BufferedReader(new InputStreamReader(System.in)); 
 				FileWriter myWriter = new FileWriter("output/" + command+ "/" + fileName + ".txt");
 				)
-		//TOT HIER GESCHREVEN
+
 		{		
 				socket.setSoTimeout(5000);
 				out.println(command + " "+ pathURI + " " + "HTTP/1.1" + "\n");
-				out.println("Host: " + hostName + "\n");
+				//out.println("Host: " + hostName + "\n");
 				out.println("\n");
 				out.flush();
 				System.out.println("sent to server: ");
 				System.out.print(command + " "+ pathURI + " " + "HTTP/1.1" + "\n");
-				System.out.print("Host: " + hostName + "\n");
+				//System.out.print("Host: " + hostName + "\n");
 				System.out.print("\n");
 				
 				/*
