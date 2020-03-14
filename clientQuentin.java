@@ -45,6 +45,7 @@ public class Client {
 		}
 		
 		String command = args[0];
+		command = "GET";//debugging purposes
 		URI uri = new URI(args[1]);
 		//uri = new URI("http://www.google.com"); //debugging purposes
 		uri = new URI("www.google.com/"); //debugging purposes
@@ -82,9 +83,6 @@ public class Client {
 		String language = args[3]; //NOT USED YET
 		
 		String fileName = hostName;
-		if (hostName.equals("localhost")) { //JSP ENCORE
-			fileName = pathURI;
-		}
 		
 		try (
 				//this.clientSocket = new Socket(this.host, Integer.parseInt(this.port)); // open a socket with the host
@@ -121,34 +119,35 @@ public class Client {
 					String line;
 					int contentLength = 0;
 					System.out.println("Header : ");
+					myWriter.write("Header : \n\n");
 					System.out.println();
-					while (!(line = getLineFromBytes(inputServer)).isEmpty()) {
-						System.out.println(line);
+					//THIS IS THE HEADER
+					while (!((line = readLine(inputServer)).equals("\r\n")))  {
+						System.out.print(line);
 						myWriter.write(line);
-						myWriter.write("\n");
 						if (line.contains("Content-Length: ")) {
 							contentLength = Integer.parseInt(line.substring(line.indexOf(':') + 2));
 						}
 					}
-					System.out.println();
-					System.out.println("Body : ");
-					System.out.println();
-					while ((line = getLineFromBytes(inputServer))!= "0\r\n") {
-						System.out.println(line);
-						myWriter.write(line);
-						myWriter.write("\n");
+					if (command == "GET") {
+						System.out.println();
+						System.out.println("Body : ");
+						myWriter.write("\nBody : \n\n");
+						System.out.println();
+						//while (!(line = getLineFromBytes(inputServer)).isEmpty()) {
+						while (!((line = readLine(inputServer)).equals("0\r\n")))  {
+							System.out.print(line);
+							myWriter.write(line);
+						}
 					}
-					System.out.println("helloooooooooooooooooo");
-					System.out.println("helloooooooooooooooooo");
-					System.out.println("helloooooooooooooooooo");
-					System.out.println("helloooooooooooooooooo");
+
 					/*
 					 * If the GET-command is invoked, retrieve webpage as html file,
 					 * parse the html file as a string and retrieve its images.
 					 */
 					if (command == "GET") {
 						String html = writeBytesFromContent(myWriter, contentLength, inputServer);
-						getImages(hostName, out, inputServer, html);
+						getImages(hostName, out, inputServer, html); //JSP ENCORE
 					}
 				}
 				
@@ -276,10 +275,7 @@ public class Client {
 	 */
 	private static void getImages(String hostName, PrintWriter out, InputStream byteStream, String html) throws NumberFormatException, IOException, URISyntaxException {
 		String url = "";
-		System.out.println("bug");
-		Document doc = Parser.parse(html, "");
-        //Document doc = Jsoup.parse(html);
-		System.out.println("bug");
+        Document doc = Jsoup.parse(html);
         Elements images = doc.select("img");
     	for (Element image : images) {
             url = image.attr("src");
@@ -410,12 +406,13 @@ public class Client {
 	 * 			Signals that an I/O exception of some sort has occurred. 
 	 */
 	public static String getLineFromBytes(InputStream byteStream) throws IOException {
-		int c; 
+		int b;
+		//char c;
 		List<Byte> byteList= new ArrayList<>();
 		do
 		{
-		   c = byteStream.read(); 
-		   if (c == '\n') {
+		   b = byteStream.read(); 
+		   if (b == '\n') {
 			   	byte[] array = new byte[byteList.size()];
 			   	for(int n = 0; n < byteList.size(); n++)
 			   	{
@@ -423,13 +420,32 @@ public class Client {
 			   	}
 			   	return new String(array, "UTF-8");
 		   }
-		   if (c != '\r') {
-			   byteList.add((byte) c);
+		   //if (c != '\r') {
+		   else {
+			   byteList.add((byte) b);
 		   }
 		}
-		while(c != -1);
+		while(b != -1);
 		return null;
 	}
+	
+	 /*
+    Reads one line from the buffered reader. Implemented in spite of readline() method already existing
+    due to the possible bugs and inconsistencies when using a combination of read() and readline() with BufferedReader
+     */
+    public static String readLine(InputStream inFromServer) throws IOException{
+        int b;
+        char c;
+        String line = "";
+        while(( b = inFromServer.read()) != -1){ // while there is something to read
+            c = (char) b; // convert read byte to the char
+            line += c; // and add it to the line
+            if (c == '\n'){ // end of line
+                break;
+            }
+        }
+        return line;
+    }
 	
 	
 
