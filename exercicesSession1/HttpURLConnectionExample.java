@@ -1,7 +1,9 @@
 
 
  
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.FileWriter;
@@ -29,7 +31,7 @@ public class HttpURLConnectionExample {
   HttpURLConnectionExample http = new HttpURLConnectionExample();
  
      // Sending get request
-  http.sendingGetRequest();
+  http.sendingGetRequest("www.google.com");
   
     // Sending post request
   //http.sendingPostRequest();
@@ -37,15 +39,15 @@ public class HttpURLConnectionExample {
  }
  
  // HTTP GET request
- private void sendingGetRequest() throws Exception {
+ private void sendingGetRequest(String page) throws Exception {
  
-  String url = "www.google.com"; 
+  String url = page; 
   // HttpURLConnection con = (HttpURLConnection) url.openConnection();
   Socket s=new Socket(url,80);
   //// By default it is GET request
   //con.setRequestMethod("GET");
   DataOutputStream dout=new DataOutputStream(new DataOutputStream(s.getOutputStream()));  
-  dout.writeBytes("GET /  HTTP/1.1 \n\n");
+  dout.writeBytes("GET /images/branding/googlelogo/2x/googlelogo_color_272x92dp.png  HTTP/1.1 \n\n");
 	      
  // dout.writeBytes("GET / HTTP/1.1\n");
  // dout.writeBytes("Host: wlab.cs.bilkent.edu.tr:80\n\n"); 
@@ -64,10 +66,18 @@ public class HttpURLConnectionExample {
   try { 
 	  s.setSoTimeout(5000);
 	  String output;
+	   boolean header = true;
 		  while ((output = in.readLine())!=null) {
 			//  System.out.println(output);
+			  if (header) {
+				  if (output.isEmpty()) {
+					  header = false;
+				  }
+			  }
+			  else{
 			  response.append(output);
 			}
+  }
   }
   catch (Exception e) {
 	  System.out.println("Time Out");
@@ -89,6 +99,71 @@ public class HttpURLConnectionExample {
 	System.out.println("closed");
 	System.out.println("GET IS DONE");
 }
+ private void sendingGetRequestforImage(String page) throws Exception {
+	 
+	  String url = page; 
+	  // HttpURLConnection con = (HttpURLConnection) url.openConnection();
+	  Socket s=new Socket(url,80);
+	  //// By default it is GET request
+	  //con.setRequestMethod("GET");
+	  DataOutputStream dout=new DataOutputStream(new DataOutputStream(s.getOutputStream()));  
+	  dout.writeBytes("GET /images/branding/googlelogo/2x/googlelogo_color_272x92dp.png  HTTP/1.1 \n\n");
+		      
+	 // dout.writeBytes("GET / HTTP/1.1\n");
+	 // dout.writeBytes("Host: wlab.cs.bilkent.edu.tr:80\n\n"); 
+
+	  ////add request header
+	  // con.setRequestProperty("User-Agent", USER_AGENT);
+	 
+	  //int responseCode = con.getResponseCode();
+	  System.out.println("Sending get request : "+ url);
+	//  System.out.println("Response code : "+ responseCode);
+	 
+	  // Reading response from input Stream
+	  StringBuffer response = new StringBuffer();
+	  //BufferedInputStream in = new BufferedInputStream(s.getInputStream())
+	  BufferedReader in = new BufferedReader(
+	          new InputStreamReader(s.getInputStream()));
+	  ByteArrayOutputStream out = new ByteArrayOutputStream();
+	  try { 
+		  s.setSoTimeout(5000);
+		  String output;
+		   boolean header = true;
+			  while (((output = in.readLine())!=null)&(header=true)) {
+				//  System.out.println(output);
+				  
+					  if (output.isEmpty()) {
+						  header = false;
+					  }
+			  } // Skipped the header
+			
+			  while ()
+			int n = 0;
+			while (-1!=(n=in.read())) {
+			 out.write(buf,0,n);
+					 
+	  }
+	  }
+	  catch (Exception e) {
+		  System.out.println("Time Out");
+	  }
+	  //printing result from response
+	  System.out.println("result:");
+	  System.out.println(response.toString());
+	  String str = response.toString();
+	  FileWriter myWriter = new FileWriter("/Users/robin/eclipse-workspace/Computer Networks/src/" + url + ".HTML");
+	  
+	  //schrijft heel de website naar een file
+	  myWriter.write(str);
+	  myWriter.close();
+	  //gaat opzoek naar image
+	  
+	  in.close();
+	  dout.close();  
+		s.close();  
+		System.out.println("closed");
+		System.out.println("GET IS DONE");
+	}
 
  private void findingimage(String fileName) throws Exception {
 	 File input = new File(fileName);
