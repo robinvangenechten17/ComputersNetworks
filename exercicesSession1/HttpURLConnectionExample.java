@@ -24,7 +24,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 /**
- * @author Robin Van Genechten en Quentin
+ * @author Robin Van Genechten en Quentin Stroobants
  */
 public class HttpURLConnectionExample {
  
