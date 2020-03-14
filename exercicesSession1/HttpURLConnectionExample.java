@@ -50,6 +50,7 @@ public class HttpURLConnectionExample {
   //// By default it is GET request
   //con.setRequestMethod("GET");
   DataOutputStream dout=new DataOutputStream(new DataOutputStream(s.getOutputStream()));  
+
   dout.writeBytes("GET /  HTTP/1.1 \r\n");
   dout.writeBytes("Host: " + url +"\r\n"); 
   dout.writeBytes("\r\n");// add an emptyline
