@@ -47,7 +47,7 @@ public class HttpURLConnectionExample {
   //// By default it is GET request
   //con.setRequestMethod("GET");
   DataOutputStream dout=new DataOutputStream(new DataOutputStream(s.getOutputStream()));  
-  dout.writeBytes("GET /images/branding/googlelogo/2x/googlelogo_color_272x92dp.png  HTTP/1.1 \n\n");
+  dout.writeBytes("GET / HTTP/1.1 \n\n");
 	      
  // dout.writeBytes("GET / HTTP/1.1\n");
  // dout.writeBytes("Host: wlab.cs.bilkent.edu.tr:80\n\n"); 
