@@ -40,11 +40,11 @@ public class JavaHTTPServer implements Runnable{
 
 	static final String FILE_NOT_FOUND = "htmlPages/404.html";
 	
-	static final String BAD_REQUEST = "400.html";
+	static final String BAD_REQUEST = "htmlPages/400.html";
 	
-	static final String SERVER_ERROR = "500.html";
+	static final String SERVER_ERROR = "htmlPages/500.html";
 
-	static final String METHOD_NOT_SUPPORTED = "not_supported.html";
+	static final String METHOD_NOT_SUPPORTED = "htmlPages/not_supported.html";
 
 	// port to listen connection
 
