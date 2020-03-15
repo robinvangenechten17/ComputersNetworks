@@ -1,4 +1,4 @@
-
+//package Practicum;
 
 import java.io.BufferedOutputStream;
 
@@ -36,9 +36,9 @@ public class JavaHTTPServer implements Runnable{
 
 	static final File WEB_ROOT = new File(".");
 
-	static final String DEFAULT_FILE = "index.html";
+	static final String DEFAULT_FILE = "htmlPages/index.html";
 
-	static final String FILE_NOT_FOUND = "404.html";
+	static final String FILE_NOT_FOUND = "htmlPages/404.html";
 	
 	static final String BAD_REQUEST = "400.html";
 	
