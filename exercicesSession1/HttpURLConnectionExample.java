@@ -413,7 +413,8 @@ public class HttpURLConnectionExample {
   System.out.println(response.toString());
   System.out.println("closing");
   in.close();
-  s.close();
+  s.close(); 
+  
   dout.close();  
   System.out.println("closed");
   //printing result from response
