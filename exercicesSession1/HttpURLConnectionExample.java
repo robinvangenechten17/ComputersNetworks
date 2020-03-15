@@ -60,7 +60,7 @@ public class HttpURLConnectionExample {
   if (command.contentEquals("GET")) {   // Get the page, parse images and translate
 	  System.out.println("Processing GET command");
   http.sendingGetRequest(host, port, outputdir);
-  http.findingimage(outputdir + host + ".HTML", host, port,outputdir);
+  http.findingimage(outputdir +"GET_"+ host + ".HTML", host, port,outputdir);
   }
   if (command.contentEquals("HEAD")) {   // Get the page, parse images and translate
 	  System.out.println("Processing HEAD command");
@@ -181,7 +181,7 @@ public class HttpURLConnectionExample {
 			  if (header) {
 				  if (firstline) {
 					  System.out.println(output);
-					  String[] statusline=output.split(" ");;
+					  String[] statusline=output.split(" ",3);
 					  
 					  headerProp.setProperty("Protocol",statusline[0]);
 					  headerProp.setProperty("StatusCode",statusline[1]);
@@ -213,6 +213,7 @@ public class HttpURLConnectionExample {
 							  // read lines until we have the chunck
 						   int responseLengthbefore = response.length();
 							  response.append(in.readLine());
+							  response.append(System.getProperty("line.separator"));
 						   counter = counter + response.length()-responseLengthbefore;
 						  }
 					  }else
@@ -234,7 +235,7 @@ public class HttpURLConnectionExample {
   System.out.println(response.toString());
   String str = response.toString();
   
-  FileWriter myWriter = new FileWriter( outputdir + "GET" + url + ".HTML");
+  FileWriter myWriter = new FileWriter( outputdir + "GET_" + url + ".HTML");
   
   //schrijft heel de website naar een file
   myWriter.write(str);
@@ -269,7 +270,8 @@ public class HttpURLConnectionExample {
 	  
 	  
 	  try { 
-		  s.setSoTimeout(5000);
+		  Properties headerProp = new Properties() ;
+	  	  s.setSoTimeout(500);
 		  BufferedInputStream in = new BufferedInputStream(s.getInputStream());
 		  boolean header = true;
 		  byte[] readBytes = new byte[2048];
@@ -280,25 +282,40 @@ public class HttpURLConnectionExample {
 					imageFile.write(readBytes,0,counter); // write all read bytes to file
 					
 				}
-				else
+				else {
+					boolean imageNotFound = false;
 					for (int i =0; i < 2045; i++) {
 						if (readBytes[i]==13 && readBytes[i+1]==10 && readBytes[i+2]==13 && readBytes[i+3]==10   ) {
 							header = false; // found end of header
 							String imgheader = new String(Arrays.copyOfRange(readBytes, 0, i));
 							System.out.println ("----IMG HEADER ---");
 							System.out.println(imgheader);
-							System.out.println("----END OF IMG HEADER ---");
-							System.out.println("Image Header Parsed, now saving Image");
-							imageFile.write(readBytes,i+4,2048-i-4);
-							break;
-						}
-						else
-						{
+							String[] statusline=imgheader.split(System.getProperty("line.separator"))[0].split(" ",3);
+							headerProp.setProperty("Protocol",statusline[0]);
+							  headerProp.setProperty("StatusCode",statusline[1]);
+							  headerProp.setProperty("StatusTxt",statusline[2]);
+							  headerProp.load((new StringReader(imgheader)));
 							
+							System.out.println("----END OF IMG HEADER ---");
+							if (headerProp.getProperty("StatusCode").contentEquals("200")) {
+								System.out.println("Image Header Parsed, now saving Image");
+								imageFile.write(readBytes,i+4,counter-i-4);			
+								break;
+							}else {
+								imageNotFound = true;
+								System.out.println("This file could not be found on server");
+								System.out.println("Errorcode: "+headerProp.getProperty("StatusCode")+" "+headerProp.getProperty("StatusTxt"));
+								
+							}
+								
 						}
+						
 					}
+					if (imageNotFound) {
+						break;
+					}
+				}
 		  }
-			
 					 
 	  }
 	  
@@ -310,8 +327,9 @@ public class HttpURLConnectionExample {
 	  
 	  
 	  out.close();  
-		s.close();  
+		s.close();
 		imageFile.close();
+		System.out.println("ImageSize is: "+ newFile.length());
 		System.out.println("closed");
 		System.out.println("GET IMAGE IS DONE");
 	}
