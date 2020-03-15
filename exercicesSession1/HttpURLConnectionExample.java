@@ -25,11 +25,25 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 /**
- * @author Robin Van Genechten en Quentin Stroobants
+ * 
+ * A class representing a chat user as an HTTP client that communicates
+ * with an HTTP server that serves information such as web pages for end users.
+ * This HTTP Client Program supports HTTP/1.1. 
+ * To run the program enter 4 arguments divided by one space: Args = [command, uri, portnumber] 
+ * The client supports the GET, HEAD, PUT and POST commands.
+ * 
+ * @author Robin Van Genechten & Quentin Stroobants
+ *
  */
 public class HttpURLConnectionExample {
  
- 
+	/**
+	 * The main method to invoke the Client.
+	 * 
+	 * @param 	args
+	 * 			Args = [command, uri, portnumber]
+	 * @throws 	...
+	 */
  public static void main(String[] args) throws Exception {
  
   HttpURLConnectionExample http = new HttpURLConnectionExample();
@@ -65,6 +79,17 @@ public class HttpURLConnectionExample {
  }
  
  // HTTP GET request
+ /**
+	 * Execute the GET request and saves them into local files.
+	 * 
+	 * @param 	url
+	 * 			The given url as a string.
+	 * @param 	port
+	 * 			The given port , mostly 80.
+	 * @param 	outputdir
+	 * 			The local directory to save the result and downloaded image files.
+	 * @throws 	...
+	 */
  private void sendingGetRequest(String url,int port, String outputdir) throws Exception {
  
    
@@ -125,7 +150,22 @@ public class HttpURLConnectionExample {
 	System.out.println("GET Webpage IS DONE");
 	
 }
+
  private void sendingGetRequestforImage(String url, String imagelocation, int port, String outputdir) throws Exception {
+
+ /**
+	 * Execute the GET request for an image and saves them into local files.
+	 * 
+	 * @param 	url
+	 * 			The given url as a string.
+	 * @param 	port
+	 * 			The given port , mostly 80.
+	 * @param 	imagelocation
+	 * 			The src of the image.
+	 * @param	outputdir
+	 * 			the location on local disk to put the image files
+	 * @throws 	...
+	 */
 	 
 	  
 	  // HttpURLConnection con = (HttpURLConnection) url.openConnection();
@@ -192,8 +232,22 @@ public class HttpURLConnectionExample {
 		System.out.println("closed");
 		System.out.println("GET IMAGE IS DONE");
 	}
+<<<<<<< HEAD
 
  private void findingimage(String fileName , String serverName, int port, String outputdir) throws Exception {
+=======
+ /**
+	 * Finds all images on a HTML page and stores them in local files
+	 * @param 	fileName
+	 * 			The name of the new local files to store the images.
+	 * @param 	ServerName
+	 * 			The given server as a string.
+	 * @param 	port
+	 * 			he given port , mostly 80.
+	 * @param 	outputdir
+	 * 			The location on local disk to store the downloaded images
+	 * @throws 	...
+	 */
 	 File input = new File(fileName);
 	 Document doc = Jsoup.parse(input,"UTF-8",serverName);
 	 Elements img = doc.getElementsByTag("img");
@@ -214,6 +268,9 @@ public class HttpURLConnectionExample {
  
  
  // HTTP Post request
+ /**
+	 * Execute the POST request.
+	 */
  private void sendingPostRequest() throws Exception {
  
   String url = "www.example.com";
