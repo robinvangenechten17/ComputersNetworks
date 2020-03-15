@@ -78,6 +78,14 @@ public class HttpURLConnectionExample {
 	  System.out.println("Processing HEAD command");
   http.sendingHeadRequest(host, port, outputdir);
   }
+  if (command.contentEquals("PUT")) {   // Get the page, parse images and translate
+	  System.out.println("Processing PUT command");
+  http.sendingPutRequest(port);
+  }
+  if (command.contentEquals("POST")) {   // Get the page, parse images and translate
+	  System.out.println("Processing POST command");
+  http.sendingPostRequest(port);
+  }
  }
  // HTTP HEAD request
  /**
@@ -130,7 +138,7 @@ public class HttpURLConnectionExample {
   System.out.println(response.toString());
   String str = response.toString();
   
-  FileWriter myWriter = new FileWriter("HEAD" + outputdir + url + ".HTML");
+  FileWriter myWriter = new FileWriter(  outputdir + "HEAD" + url + ".HTML");
   
   //schrijft heel de website naar een file
   myWriter.write(str);
@@ -205,7 +213,7 @@ public class HttpURLConnectionExample {
   System.out.println(response.toString());
   String str = response.toString();
   
-  FileWriter myWriter = new FileWriter("GET" +outputdir + url + ".HTML");
+  FileWriter myWriter = new FileWriter( outputdir + "GET" + url + ".HTML");
   
   //schrijft heel de website naar een file
   myWriter.write(str);
@@ -387,4 +395,53 @@ public class HttpURLConnectionExample {
   
   System.out.println("POST IS DONE");
  }
+ private void sendingPutRequest(int port) throws Exception {
+	 
+	  Socket s=new Socket("localhost",80); 
+	  DataOutputStream dout=new DataOutputStream(s.getOutputStream());  
+	  PrintWriter out = new PrintWriter(s.getOutputStream(),true);
+	  System.out.println("Sending PUT request ");
+	  out.println("PUT / HTTP/1.1");
+	  out.println("Host: " +"localhost" + ":"+port);
+	  out.println(""); 
+		     
+	        // Setting basic post request
+	 // con.setRequestMethod("POST");
+	// con.setRequestProperty("User-Agent", USER_AGENT);
+	// con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
+	// con.setRequestProperty("Content-Type","application/json");
+	  BufferedReader br=new BufferedReader(new InputStreamReader(System.in));
+	  String str2 ="";
+	  str2=br.readLine();  
+	//  String postJsonData = "{"+"id"+":5"+","+"countryName"+":"+"USA"+","+"population"+":8000"+"}";
+	  
+	  // Send post request
+	//  con.setDoOutput(true);
+	  DataOutputStream wr = new DataOutputStream(s.getOutputStream());
+	  wr.writeBytes(str2);
+	  wr.flush();
+	  wr.close();
+	 
+	  //int responseCode = con.getResponseCode();
+	  System.out.println("Put Data : " + str2);
+	//  System.out.println("Response Code : " + responseCode);
+	 
+	  BufferedReader in = new BufferedReader(
+	          new InputStreamReader(s.getInputStream()));
+	  String output;
+	  StringBuffer response = new StringBuffer();
+	 
+	  while ((output = in.readLine()) != null) {
+	   response.append(output);
+	  }
+	  System.out.println(response.toString());
+	  System.out.println("closing");
+	  in.close();
+	  s.close();
+	  dout.close();  
+	  System.out.println("closed");
+	  //printing result from response
+	  
+	  System.out.println("PUT IS DONE");
+	 }
 }

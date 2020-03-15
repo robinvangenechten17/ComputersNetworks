@@ -3,13 +3,14 @@
 import java.io.BufferedOutputStream;
 
 import java.io.BufferedReader;
-
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 
 import java.io.FileInputStream;
 
 import java.io.FileNotFoundException;
-
+import java.io.FileWriter;
 import java.io.IOException;
 
 import java.io.InputStreamReader;
@@ -21,7 +22,7 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 
 import java.net.Socket;
-
+import java.net.SocketAddress;
 import java.util.Date;
 
 import java.util.StringTokenizer;
@@ -62,8 +63,8 @@ public class JavaHTTPServer implements Runnable{
 		connect = c;
 
 	}
-
-	
+	//To store files 
+	String outputdir = "/Users/robin/eclipse-workspace/Computer Networks/src/";
 
 	public static void main(String[] args) {
 
@@ -219,6 +220,12 @@ public class JavaHTTPServer implements Runnable{
 						System.out.println("File " + fileRequested + " of type " + content + " returned");
 	
 					}
+					}
+					else if (method.equals("PUT")) {
+						
+					}
+					else if (method.equals("POST")) {
+						
 					}
 				}else {
 					try {
@@ -485,6 +492,41 @@ public class JavaHTTPServer implements Runnable{
 
 		dataOut.flush();
 	}
+public static void Post(ServerSocket ss, Socket s, BufferedReader in , String outputdir)throws Exception{    
+	String str="";  
+	StringBuffer response = new StringBuffer();
+	String st; 
+	  while ((st = in.readLine()) != null) {
+	    response.append(st); 
+	  } 
+	while(!str.equals("stop")){  
+		str=response.toString();  
+		FileWriter myWriter = new FileWriter(outputdir + "Post");
+	    //myWriter.write("Files in Java might be tricky, but it is fun enough!");
+		myWriter.write(str);
+	    myWriter.close();
+	    System.out.println("Successfully wrote to the file.");
+		System.out.println("client says: "+str);  	
+	}  
+	}
+public static void Put(ServerSocket ss, Socket s, BufferedReader in , String outputdir)throws Exception{    
+	String str="";  
+	StringBuffer response = new StringBuffer();
+	String st; 
+	  while ((st = in.readLine()) != null) {
+	    response.append(st); 
+	  } 
+	SocketAddress id =s.getRemoteSocketAddress();
+	while(!str.equals("stop")){  
+		str=response.toString();  
+		FileWriter myWriter = new FileWriter( outputdir + "Put" + id);
+	    //myWriter.write("Files in Java might be tricky, but it is fun enough!");
+		myWriter.write(str);
+	    myWriter.close();
+	    System.out.println("Successfully wrote to the file.");
+		System.out.println("client says: "+str);  	
+	}  
+}
 	}
 	
 
