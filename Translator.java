@@ -14,7 +14,7 @@ import java.net.URLEncoder;
 public class Translator {
 
     public static void main(String[] args) throws IOException {
-        String text = "Hello world! My name is Quentin.";
+        String text = "Hello world! My name is Quentin .";
         System.out.println("Translated text: " + translate("en", "nl", text));
     }
 
