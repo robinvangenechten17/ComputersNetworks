@@ -352,12 +352,14 @@ public class HttpURLConnectionExample {
 	 Document doc = Jsoup.parse(input,"UTF-8",serverName);
 	 Elements img = doc.getElementsByTag("img");
 	 if (img.size()>0) {
+		 System.out.println("");
 		 System.out.println("retreiving "+ img.size()+" image(s)");
 		 int counter = 0;
 		 for (Element image : img) {
 			 counter +=1;
 			 String src = image.attr("src");
 			 if (!(src.isEmpty())) {
+				 System.out.println("");
 				 System.out.println("retreiving image nbr " + counter+ " src: " + src);
 				 if (src.charAt(0) != '/'){
 						 if (src.regionMatches(0, "http", 0, 4)) {
