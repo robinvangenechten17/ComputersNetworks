@@ -10,12 +10,14 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.io.StringReader;
 import java.net.HttpURLConnection;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Properties;
 import java.io.File;
 import java.io.FileOutputStream;
 
@@ -25,25 +27,11 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 /**
- * 
- * A class representing a chat user as an HTTP client that communicates
- * with an HTTP server that serves information such as web pages for end users.
- * This HTTP Client Program supports HTTP/1.1. 
- * To run the program enter 4 arguments divided by one space: Args = [command, uri, portnumber] 
- * The client supports the GET, HEAD, PUT and POST commands.
- * 
- * @author Robin Van Genechten & Quentin Stroobants
- *
+ * @author Robin Van Genechten en Quentin Stroobants
  */
 public class HttpURLConnectionExample {
  
-	/**
-	 * The main method to invoke the Client.
-	 * 
-	 * @param 	args
-	 * 			Args = [command, uri, portnumber]
-	 * @throws 	...
-	 */
+ 
  public static void main(String[] args) throws Exception {
  
   HttpURLConnectionExample http = new HttpURLConnectionExample();
@@ -79,17 +67,6 @@ public class HttpURLConnectionExample {
  }
  
  // HTTP GET request
- /**
-	 * Execute the GET request and saves them into local files.
-	 * 
-	 * @param 	url
-	 * 			The given url as a string.
-	 * @param 	port
-	 * 			The given port , mostly 80.
-	 * @param 	outputdir
-	 * 			The local directory to save the result and downloaded image files.
-	 * @throws 	...
-	 */
  private void sendingGetRequest(String url,int port, String outputdir) throws Exception {
  
    
@@ -100,7 +77,8 @@ public class HttpURLConnectionExample {
   PrintWriter out = new PrintWriter(s.getOutputStream(),true);
   System.out.println("Sending get request "+ url);
   out.println("GET / HTTP/1.1");
-  out.println("Host: " +url+ ":"+port);
+  // remark, this implementation only gets root index file of the url
+  out.println("Host: " +url+ ":" +port);
   out.println("");      
  
   
@@ -110,23 +88,64 @@ public class HttpURLConnectionExample {
   BufferedReader in = new BufferedReader(
           new InputStreamReader(s.getInputStream()));
   try { 
-	  s.setSoTimeout(5000);
+	  //s.setSoTimeout(5000);
 	  String output;
+	  
 	   boolean header = true;
+	   boolean firstline = true;
+	   int chunkLength = 0;
+	   Properties headerProp = new Properties() ;
 	   System.out.println("----HEADER----");
 		  while ((output = in.readLine())!=null) {
 			//  System.out.println(output);
+			  
 			  if (header) {
-				  System.out.println(output);
-				  if (output.isEmpty()) {
-					  header = false;
-					  System.out.println("----END OF HEADER----");
+				  if (firstline) {
+					  System.out.println(output);
+					  String[] statusline=output.split(" ");;
+					  
+					  headerProp.setProperty("Protocol",statusline[0]);
+					  headerProp.setProperty("StatusCode",statusline[1]);
+					  headerProp.setProperty("StatusTxt",statusline[2]);
+					  firstline = false;
+				  } else {
+				  
+					  if (output.isEmpty()) {
+						  header = false;
+						  //headerProp.list(System.out);
+						  System.out.println("--- END OF HEADER ---");
+					  } else // reading rest of header line by line
+					  {
+						  headerProp.load((new StringReader(output)));
+						  System.out.println(output);
+					  }
 				  }
 			  }
 			  else{
-			  response.append(output);
+				  if (headerProp.containsKey("Content-Length")) {
+					  response.append(output);
+					  
+				  } else {
+					  // Chuncked content
+					  chunkLength = Integer.parseInt(output,16);
+					  if (chunkLength > 0) {
+						  int counter = 0;
+						  while (counter < chunkLength) {
+							  // read lines until we have the chunck
+						   int responseLengthbefore = response.length();
+							  response.append(in.readLine());
+						   counter = counter + response.length()-responseLengthbefore;
+						  }
+					  }else
+					  {
+						  // chunckLength = 0
+						  break;
+					  }
+				  }
 			}
-  }
+		  }
+		  
+		  
   }
   catch (Exception e) {
 	  System.out.println("Time Out");
@@ -150,22 +169,7 @@ public class HttpURLConnectionExample {
 	System.out.println("GET Webpage IS DONE");
 	
 }
-
  private void sendingGetRequestforImage(String url, String imagelocation, int port, String outputdir) throws Exception {
-
- /**
-	 * Execute the GET request for an image and saves them into local files.
-	 * 
-	 * @param 	url
-	 * 			The given url as a string.
-	 * @param 	port
-	 * 			The given port , mostly 80.
-	 * @param 	imagelocation
-	 * 			The src of the image.
-	 * @param	outputdir
-	 * 			the location on local disk to put the image files
-	 * @throws 	...
-	 */
 	 
 	  
 	  // HttpURLConnection con = (HttpURLConnection) url.openConnection();
@@ -201,7 +205,7 @@ public class HttpURLConnectionExample {
 					for (int i =0; i < 2045; i++) {
 						if (readBytes[i]==13 && readBytes[i+1]==10 && readBytes[i+2]==13 && readBytes[i+3]==10   ) {
 							header = false; // found end of header
-							String imgheader = new String(Arrays.copyOfRange(readBytes, 0, i-1));
+							String imgheader = new String(Arrays.copyOfRange(readBytes, 0, i));
 							System.out.println ("----IMG HEADER ---");
 							System.out.println(imgheader);
 							System.out.println("----END OF IMG HEADER ---");
@@ -232,22 +236,8 @@ public class HttpURLConnectionExample {
 		System.out.println("closed");
 		System.out.println("GET IMAGE IS DONE");
 	}
-<<<<<<< HEAD
 
  private void findingimage(String fileName , String serverName, int port, String outputdir) throws Exception {
-=======
- /**
-	 * Finds all images on a HTML page and stores them in local files
-	 * @param 	fileName
-	 * 			The name of the new local files to store the images.
-	 * @param 	ServerName
-	 * 			The given server as a string.
-	 * @param 	port
-	 * 			he given port , mostly 80.
-	 * @param 	outputdir
-	 * 			The location on local disk to store the downloaded images
-	 * @throws 	...
-	 */
 	 File input = new File(fileName);
 	 Document doc = Jsoup.parse(input,"UTF-8",serverName);
 	 Elements img = doc.getElementsByTag("img");
@@ -257,9 +247,26 @@ public class HttpURLConnectionExample {
 		 for (Element image : img) {
 			 counter +=1;
 			 String src = image.attr("src");
-			 System.out.println("retreiving image nbr " + counter+ " src: " + src);
-			 sendingGetRequestforImage(serverName, src, port, outputdir);
-		 }
+			 if (!(src.isEmpty())) {
+				 System.out.println("retreiving image nbr " + counter+ " src: " + src);
+				 if (src.charAt(0) != '/'){
+						 if (src.regionMatches(0, "http", 0, 4)) {
+							 System.out.println("image nbr "+counter+ " is absolutely referenced and will thus not be retreived");
+							 
+							 continue;
+						 }
+						 else{
+							 src = "/"+src; // SIMPLIFICATION:we should find the folder of the webpage downloaded, but in our examples we always use root pages, so adding root is ok
+						 };
+				 }
+						 
+				 
+				 sendingGetRequestforImage(serverName, src, port, outputdir);
+			 	} else
+			 	{
+			 		System.out.println("uri of images is empty, can not retreive image nbr "+counter);
+			 	}
+		 	}
 		 } else
 	 	{
 	 		System.out.println("No images Found");
@@ -268,9 +275,6 @@ public class HttpURLConnectionExample {
  
  
  // HTTP Post request
- /**
-	 * Execute the POST request.
-	 */
  private void sendingPostRequest() throws Exception {
  
   String url = "www.example.com";
