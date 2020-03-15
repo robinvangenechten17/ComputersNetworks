@@ -173,12 +173,12 @@ public class JavaHTTPServer implements Runnable{
 					
 					// GET or HEAD method
 	
-					if (fileRequested.endsWith("/")) {
+					if ( fileRequested.endsWith("/")) {
 	
 						fileRequested += DEFAULT_FILE;
 	
 					}
-	
+					if (method.equals("GET")  ||  method.equals("HEAD")) {
 					File file = new File(WEB_ROOT, fileRequested);
 	
 					int fileLength = (int) file.length();
@@ -218,6 +218,7 @@ public class JavaHTTPServer implements Runnable{
 	
 						System.out.println("File " + fileRequested + " of type " + content + " returned");
 	
+					}
 					}
 				}else {
 					try {
