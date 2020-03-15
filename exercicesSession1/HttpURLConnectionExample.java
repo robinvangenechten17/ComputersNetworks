@@ -339,12 +339,13 @@ public class HttpURLConnectionExample {
 	 */
  private void sendingPostRequest() throws Exception {
  
-  String url = "www.example.com";
-  //URL obj = new URL(url);
-  //HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-  Socket s=new Socket(url,80);
+  Socket s=new Socket("localhost",80); 
   DataOutputStream dout=new DataOutputStream(s.getOutputStream());  
-  dout.writeBytes("POST http://www.example.com  HTTP/1.1 \n\n");
+  PrintWriter out = new PrintWriter(s.getOutputStream(),true);
+  System.out.println("Sending get request "+ url);
+  out.println("GET / HTTP/1.1");
+  out.println("Host: " +url+ ":"+port);
+  out.println(""); 
 	     
         // Setting basic post request
  // con.setRequestMethod("POST");
@@ -364,7 +365,6 @@ public class HttpURLConnectionExample {
   wr.close();
  
   //int responseCode = con.getResponseCode();
-  System.out.println("nSending 'POST' request to URL : " + url);
   System.out.println("Post Data : " + str2);
 //  System.out.println("Response Code : " + responseCode);
  

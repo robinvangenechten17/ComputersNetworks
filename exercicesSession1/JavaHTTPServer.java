@@ -47,7 +47,7 @@ public class JavaHTTPServer implements Runnable{
 
 	// port to listen connection
 
-	static final int PORT = 8080;
+	static final int PORT = 80;
 	
 	// verbose mode
 
