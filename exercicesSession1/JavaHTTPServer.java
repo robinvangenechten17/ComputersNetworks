@@ -196,7 +196,7 @@ public class JavaHTTPServer implements Runnable{
 	
 						out.println("HTTP/1.1 200 OK");
 	
-						out.println("Server: Java HTTP Server from Quentin Stroobants and Robin : 1.0");
+						out.println("Server: Java HTTP Server from Quentin  and Robin : 1.0");
 	
 						out.println("Date: " + new Date());
 	
