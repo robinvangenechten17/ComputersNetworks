@@ -203,7 +203,7 @@ public class HttpURLConnectionExample {
 			  else{
 				  if (headerProp.containsKey("Content-Length")) {
 					  response.append(output);
-					  
+					  response.append(System.getProperty("line.separator"));
 				  } else {
 					  // Chuncked content
 					  chunkLength = Integer.parseInt(output,16);
