@@ -1,6 +1,4 @@
 
-
- 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -75,9 +73,76 @@ public class HttpURLConnectionExample {
   http.sendingGetRequest(host, port, outputdir);
   http.findingimage(outputdir + host + ".HTML", host, port,outputdir);
   }
- 
+  if (command.contentEquals("HEAD")) {   // Get the page, parse images and translate
+	  System.out.println("Processing HEAD command");
+  http.sendingHeadRequest(host, port, outputdir);
+  }
  }
+ // HTTP HEAD request
+ /**
+	 * Execute the HEAD request and saves them into local files.
+	 * 
+	 * @param 	url
+	 * 			The given url as a string.
+	 * @param 	port
+	 * 			The given port , mostly 80.
+	 * @param 	outputdir
+	 * 			The local directory to save the result and downloaded image files.
+	 * @throws 	...
+	 */
+ private void sendingHeadRequest(String url,int port, String outputdir) throws Exception {
  
+   
+  // HttpURLConnection con = (HttpURLConnection) url.openConnection();
+  Socket s=new Socket(url,port);
+  //// By default it is GET request
+  //con.setRequestMethod("GET");
+  PrintWriter out = new PrintWriter(s.getOutputStream(),true);
+  System.out.println("Sending get request "+ url);
+  out.println("HEAD / HTTP/1.1");
+  out.println("Host: " +url+ ":"+port);
+  out.println("");      
+ 
+  
+  
+  // Reading response from input Stream
+  StringBuffer response = new StringBuffer();
+  BufferedReader in = new BufferedReader(
+          new InputStreamReader(s.getInputStream()));
+  try { 
+	  s.setSoTimeout(5000);
+	  String output;
+	   System.out.println("----HEADER----");
+		  while ((output = in.readLine())!=null) {
+			//  System.out.println(output);
+				  System.out.println(output);
+				  response.append(output);
+					  
+				  }
+				  System.out.println("----END OF HEADER----");
+  }
+  catch (Exception e) {
+	  System.out.println("Time Out");
+  }
+  //printing result from response
+  System.out.println("result:");
+  System.out.println(response.toString());
+  String str = response.toString();
+  
+  FileWriter myWriter = new FileWriter("HEAD" + outputdir + url + ".HTML");
+  
+  //schrijft heel de website naar een file
+  myWriter.write(str);
+  myWriter.close();
+  //gaat opzoek naar image
+  
+  in.close();
+  out.close();  
+	s.close();  
+	System.out.println("closed");
+	System.out.println("GET Webpage IS DONE");
+	
+}
  // HTTP GET request
  /**
 	 * Execute the GET request and saves them into local files.
@@ -110,7 +175,10 @@ public class HttpURLConnectionExample {
   BufferedReader in = new BufferedReader(
           new InputStreamReader(s.getInputStream()));
   try { 
-	  s.setSoTimeout(5000);
+	// TIMEOUT IS TER VERVANGING VAN KIJKEN NAAR CHUNKS OF CONTENTH LENGTH;
+	// NORMAAL AANTAL BYTES BINNEN HALEN PER CHUNK EN CHECKEN OP VOLGENDE CHUNK TOT EEN CHUNK NUL IS 
+	// OF HEEL CONTENTH LENGTH IN EENS BINNEN HALEN
+	  s.setSoTimeout(5000); 
 	  String output;
 	   boolean header = true;
 	   System.out.println("----HEADER----");
@@ -136,7 +204,7 @@ public class HttpURLConnectionExample {
   System.out.println(response.toString());
   String str = response.toString();
   
-  FileWriter myWriter = new FileWriter(outputdir + url + ".HTML");
+  FileWriter myWriter = new FileWriter("GET" +outputdir + url + ".HTML");
   
   //schrijft heel de website naar een file
   myWriter.write(str);
@@ -232,10 +300,7 @@ public class HttpURLConnectionExample {
 		System.out.println("closed");
 		System.out.println("GET IMAGE IS DONE");
 	}
-<<<<<<< HEAD
 
- private void findingimage(String fileName , String serverName, int port, String outputdir) throws Exception {
-=======
  /**
 	 * Finds all images on a HTML page and stores them in local files
 	 * @param 	fileName
@@ -248,6 +313,7 @@ public class HttpURLConnectionExample {
 	 * 			The location on local disk to store the downloaded images
 	 * @throws 	...
 	 */
+ private void findingimage(String fileName , String serverName, int port, String outputdir) throws Exception {
 	 File input = new File(fileName);
 	 Document doc = Jsoup.parse(input,"UTF-8",serverName);
 	 Elements img = doc.getElementsByTag("img");
