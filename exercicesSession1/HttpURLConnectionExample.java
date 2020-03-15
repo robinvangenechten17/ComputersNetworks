@@ -15,6 +15,7 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
+import java.util.Arrays;
 import java.io.File;
 import java.io.FileOutputStream;
 
@@ -32,37 +33,53 @@ public class HttpURLConnectionExample {
  public static void main(String[] args) throws Exception {
  
   HttpURLConnectionExample http = new HttpURLConnectionExample();
+  //Define Default Arguments
+  for (String s: args) {
+      System.out.println(s);
+  }
+  String language = "NL";
+  int port = 80;
+  String host= "www.google.com";
+  String command = "GET";
+  String outputdir = "/Users/robin/eclipse-workspace/Computer Networks/src/";
+ switch (args.length){
+ 	case 5 :
+	 	outputdir = args[4];
+ 	case 4 : 
+ 		language = args[3];
+ 	case 3 :
+ 		port = Integer.parseInt(args[2]);
+ 	case 2:
+ 		host = args[1];
+ 	case 1:
+ 		command = args[0];
+ 	default : break;
+ }
  
-     // Sending get request
-  http.sendingGetRequest("www.google.com");
-  //http.sendingGetRequestforImage("www.google.com", "/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png");
-    // Sending post request
-  //http.sendingPostRequest();
+  if (command.contentEquals("GET")) {   // Get the page, parse images and translate
+	  System.out.println("Processing GET command");
+  http.sendingGetRequest(host, port, outputdir);
+  http.findingimage(outputdir + host + ".HTML", host, port);
+  }
  
  }
  
  // HTTP GET request
- private void sendingGetRequest(String page) throws Exception {
+ private void sendingGetRequest(String url,int port, String outputdir) throws Exception {
  
-  String url = page; 
+   
   // HttpURLConnection con = (HttpURLConnection) url.openConnection();
-  Socket s=new Socket(url,80);
+  Socket s=new Socket(url,port);
   //// By default it is GET request
   //con.setRequestMethod("GET");
   DataOutputStream dout=new DataOutputStream(new DataOutputStream(s.getOutputStream()));  
+  System.out.println("Sending get request "+ url);
 
   dout.writeBytes("GET /  HTTP/1.1 \r\n");
-  dout.writeBytes("Host: " + url +"\r\n"); 
+  dout.writeBytes("Host: " + url +":80 \r\n"); // Host header is compulsory for HTTP 1.1
   dout.writeBytes("\r\n");// add an emptyline
 	      
- // dout.writeBytes("GET / HTTP/1.1\n");
- // dout.writeBytes("Host: wlab.cs.bilkent.edu.tr:80\n\n"); 
 
-  ////add request header
-  // con.setRequestProperty("User-Agent", USER_AGENT);
- 
-  //int responseCode = con.getResponseCode();
-  System.out.println("Sending get request : "+ url);
 //  System.out.println("Response code : "+ responseCode);
  
   // Reading response from input Stream
@@ -73,11 +90,14 @@ public class HttpURLConnectionExample {
 	  s.setSoTimeout(5000);
 	  String output;
 	   boolean header = true;
+	   System.out.println("----HEADER----");
 		  while ((output = in.readLine())!=null) {
 			//  System.out.println(output);
 			  if (header) {
+				  System.out.println(output);
 				  if (output.isEmpty()) {
 					  header = false;
+					  System.out.println("----END OF HEADER----");
 				  }
 			  }
 			  else{
@@ -93,7 +113,7 @@ public class HttpURLConnectionExample {
   System.out.println(response.toString());
   String str = response.toString();
   
-  FileWriter myWriter = new FileWriter("/Users/robin/eclipse-workspace/Computer Networks/src/" + url + ".HTML");
+  FileWriter myWriter = new FileWriter(outputdir + url + ".HTML");
   
   //schrijft heel de website naar een file
   myWriter.write(str);
@@ -105,28 +125,22 @@ public class HttpURLConnectionExample {
 	s.close();  
 	System.out.println("closed");
 	System.out.println("GET Webpage IS DONE");
-	System.out.println("retreiving images");
 	
-	findingimage("/Users/robin/eclipse-workspace/Computer Networks/src/" + url + ".HTML",url);
 }
- private void sendingGetRequestforImage(String server, String imagelocation) throws Exception {
+ private void sendingGetRequestforImage(String url, String imagelocation, int port) throws Exception {
 	 
-	  String url = server; 
+	  
 	  // HttpURLConnection con = (HttpURLConnection) url.openConnection();
-	  Socket s=new Socket(url,80);
+	  Socket s=new Socket(url,port);
 	  //// By default it is GET request
 	  //con.setRequestMethod("GET");
 	  DataOutputStream dout=new DataOutputStream(new DataOutputStream(s.getOutputStream()));  
-	  dout.writeBytes("GET " +imagelocation +"  HTTP/1.1 \n\n");
-		      
-	 // dout.writeBytes("GET / HTTP/1.1\n");
-	 // dout.writeBytes("Host: wlab.cs.bilkent.edu.tr:80\n\n"); 
-
-	  ////add request header
-	  // con.setRequestProperty("User-Agent", USER_AGENT);
-	 
-	  //int responseCode = con.getResponseCode();
 	  System.out.println("Sending get request : "+ url);
+	  dout.writeBytes("GET " +imagelocation +"  HTTP/1.1 \r\n");
+	  dout.writeBytes("Host: " + url +":80 \r\n"); // Host header is compulsory for HTTP 1.1
+	  dout.writeBytes("\r\n");// add an emptyline
+		            
+
 	//  System.out.println("Response code : "+ responseCode);
 	 
 	  // Create file to save the image (inlcuding a relative path)
@@ -153,9 +167,17 @@ public class HttpURLConnectionExample {
 					for (int i =0; i < 2045; i++) {
 						if (readBytes[i]==13 && readBytes[i+1]==10 && readBytes[i+2]==13 && readBytes[i+3]==10   ) {
 							header = false; // found end of header
-							System.out.println("Header Parsed");
+							String imgheader = new String(Arrays.copyOfRange(readBytes, 0, i-1));
+							System.out.println ("----IMG HEADER ---");
+							System.out.println(imgheader);
+							System.out.println("----END OF IMG HEADER ---");
+							System.out.println("Image Header Parsed, now saving Image");
 							imageFile.write(readBytes,i+4,2048-i-4);
 							break;
+						}
+						else
+						{
+							
 						}
 					}
 		  }
@@ -174,23 +196,29 @@ public class HttpURLConnectionExample {
 		s.close();  
 		imageFile.close();
 		System.out.println("closed");
-		System.out.println("GET IS DONE");
+		System.out.println("GET IMAGE IS DONE");
 	}
 
- private void findingimage(String fileName , String serverName) throws Exception {
+ private void findingimage(String fileName , String serverName, int port) throws Exception {
 	 File input = new File(fileName);
 	 Document doc = Jsoup.parse(input,"UTF-8",serverName);
 	 Elements img = doc.getElementsByTag("img");
-	 for (Element image : img) {
-		 String src = image.attr("src");
-		 System.out.println("Image found");
-		 System.out.println("src is;" + src);
-		 sendingGetRequestforImage(serverName, src);
+	 if (img.size()>0) {
+		 System.out.println("retreiving "+ img.size()+" image(s)");
+		 int counter = 0;
+		 for (Element image : img) {
+			 counter +=1;
+			 String src = image.attr("src");
+			 System.out.println("retreiving image nbr " + counter+ " src: " + src);
+			 sendingGetRequestforImage(serverName, src, port);
+		 }
+		 } else
+	 	{
+	 		System.out.println("No images Found");
+	 	}
 	 }
- }
- private void getImage(String src) {
-	 
- }
+ 
+ 
  // HTTP Post request
  private void sendingPostRequest() throws Exception {
  
