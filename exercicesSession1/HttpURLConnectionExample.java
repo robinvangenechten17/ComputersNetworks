@@ -1,4 +1,5 @@
 
+
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -337,14 +338,14 @@ public class HttpURLConnectionExample {
  /**
 	 * Execute the POST request.
 	 */
- private void sendingPostRequest() throws Exception {
+ private void sendingPostRequest(int port) throws Exception {
  
   Socket s=new Socket("localhost",80); 
   DataOutputStream dout=new DataOutputStream(s.getOutputStream());  
   PrintWriter out = new PrintWriter(s.getOutputStream(),true);
-  System.out.println("Sending get request "+ url);
-  out.println("GET / HTTP/1.1");
-  out.println("Host: " +url+ ":"+port);
+  System.out.println("Sending POST request ");
+  out.println("POST / HTTP/1.1");
+  out.println("Host: " +"localhost" + ":"+port);
   out.println(""); 
 	     
         // Setting basic post request
