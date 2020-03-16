@@ -284,11 +284,11 @@ public class JavaHTTPServer implements Runnable{
 
 				in.close();
 
-			//	out.close();
+				out.close();
 
 				dataOut.close();
 
-			//	connect.close(); // we close socket connection
+				connect.close(); // we close socket connection
 
 			} catch (Exception e) {
 
@@ -517,7 +517,6 @@ public static void Post(BufferedReader in , String outputdir,PrintWriter out)thr
 	    response.append(st); 
 	    response.append(System.getProperty("line.separator"));
 	  } 
-	System.out.println("out of while");
 	str=response.toString();  
 	System.out.println("client says: "+str);  
 	System.out.println("Saving in a file");
@@ -527,7 +526,17 @@ public static void Post(BufferedReader in , String outputdir,PrintWriter out)thr
 	myWriter.close();
 	System.out.println("Successfully wrote to the file.");
 	System.out.println("client said: "+str);  	
-	out.println("Received your message");
+	// send HTTP Headers
+	
+		out.println("HTTP/1.1 200 OK");
+
+		out.println("Server: Java HTTP Server from Quentin  and Robin : 1.0");
+
+		out.println("Date: " + new Date());
+		
+		out.println(); // blank line between headers and content, very important !
+		
+	out.println("Received your message"); // Agreement to end Post/Put request
 	out.flush();
 	System.out.println("Done with request of client");
 	}
@@ -536,36 +545,37 @@ public static void Put(Socket s, BufferedReader in , String outputdir,PrintWrite
 	String str="";  
 	StringBuffer response = new StringBuffer();
 	String st; 
-	int k = 0;
 	  while (((st = in.readLine()) != null)) {
 		  if (st.equalsIgnoreCase("done")) {
 			  System.out.println("found done");
               break;
           }
-		 k += 1;
-		 System.out.println(k);
-		//String test = slice_end(st,4);
-		//System.out.println(test);
 	    response.append(st); 
 	    response.append(System.getProperty("line.separator"));
-	    System.out.println(st);
-	    System.out.println(response);
 	  } 
-	System.out.println("out of while");
 	SocketAddress id =s.getRemoteSocketAddress();
-	String id2 = id.toString().substring(1,id.toString().length());
+	String id2 = id.toString().substring(1,id.toString().length()).replaceFirst(":", ".");
 	System.out.println("socketid; " + id);
 	System.out.println("socketid2; " + id2);
 	str=response.toString();  
 	System.out.println("client says: "+str);  
 	System.out.println("Saving in a file");
-	FileWriter myWriter = new FileWriter( outputdir + "Put" + id2 ); // + id
-	//myWriter.write("Files in Java might be tricky, but it is fun enough!");
+	FileWriter myWriter = new FileWriter( outputdir + "Put" + id2); // + id
 	myWriter.write(str);
 	myWriter.close();
 	System.out.println("Successfully wrote to the file.");
-	System.out.println("client said: "+str);  	
-	out.println("Received your message");
+	System.out.println("client said: "+str);  
+	// send HTTP Headers
+	
+	out.println("HTTP/1.1 200 OK");
+
+	out.println("Server: Java HTTP Server from Quentin  and Robin : 1.0");
+
+	out.println("Date: " + new Date());
+	
+	out.println(); // blank line between headers and content, very important !
+	
+	out.println("Received your message"); // Agreement to end Post/Put request
 	out.flush();
 	System.out.println("Done with request of client");
 	}

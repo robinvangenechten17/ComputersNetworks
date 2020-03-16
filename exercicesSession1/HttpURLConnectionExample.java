@@ -410,25 +410,24 @@ public class HttpURLConnectionExample {
 	  out.println("Content-Type: String");
 	  out.println(" Content-Length: " + str2.length());
 	  out.println(""); 
-	  System.out.println("done with header");
+	  System.out.println("Done with sending our header");
 	  // Send post request
 	  out.println(str2);
 	  // Letting the server now request is done
-	  out.println(""); 
+	  out.println(); 
 	  out.println("done");
 	  System.out.println("Put Data : " + str2);
 	  //  System.out.println("Response Code : " + responseCode);
 
 	  //waiting for server response
 	  String st; 
-	  int k = 0;
+	  System.out.println("From server:");
 	  while((st = in.readLine()) != null){  
+		  System.out.println(st);
 		  if (st.equalsIgnoreCase("Received your message")) {
 			  System.out.println("Server received our message");
              break;
          }
-		k += 1;
-		System.out.println(k);
 	  }
 	  System.out.println("POST IS DONE");
 	 }
@@ -452,25 +451,24 @@ public class HttpURLConnectionExample {
 	  out.println("Content-Type: String");
 	  out.println(" Content-Length: " + str2.length());
 	  out.println(""); 
-	  System.out.println("done with header");
+	  System.out.println("Done with sending our header");
 	  // Send post request
 	  out.println(str2);
 	  // Letting the server now request is done
-	  out.println(""); 
+	  out.println(); 
 	  out.println("done");
 	  System.out.println("Put Data : " + str2);
 	  //  System.out.println("Response Code : " + responseCode);
 
 	  //waiting for server response
 	  String st; 
-	  int k = 0;
+	  System.out.println("From server:");
 	  while((st = in.readLine()) != null){  
+		  System.out.println(st);
 		  if (st.equalsIgnoreCase("Received your message")) {
 			  System.out.println("Server received our message");
               break;
           }
-		k += 1;
-		System.out.println(k);
 	  }
 	  System.out.println("PUT IS DONE");
 	 }
