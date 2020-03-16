@@ -1,6 +1,7 @@
 
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -17,6 +18,7 @@ import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 import java.io.File;
 import java.io.FileOutputStream;
 
@@ -32,7 +34,6 @@ public class HttpURLConnectionExample {
  
  
  public static void main(String[] args) throws Exception {
- 
   HttpURLConnectionExample http = new HttpURLConnectionExample();
   //Define Default Arguments
   for (String s: args) {
@@ -56,23 +57,23 @@ public class HttpURLConnectionExample {
  		command = args[0];
  	default : break;
  }
- 
+ Socket s=new Socket(host,port);
   if (command.contentEquals("GET")) {   // Get the page, parse images and translate
 	  System.out.println("Processing GET command");
-  http.sendingGetRequest(host, port, outputdir);
-  http.findingimage(outputdir +"GET_"+ host + ".HTML", host, port,outputdir);
+  http.sendingGetRequest(host, port, outputdir,s);
+  http.findingimage(outputdir +"GET_"+ host + ".HTML", host, port,outputdir,s);
   }
   if (command.contentEquals("HEAD")) {   // Get the page, parse images and translate
 	  System.out.println("Processing HEAD command");
-  http.sendingHeadRequest(host, port, outputdir);
+  http.sendingHeadRequest(host, port, outputdir,s);
   }
   if (command.contentEquals("PUT")) {   // Get the page, parse images and translate
 	  System.out.println("Processing PUT command");
-  http.sendingPutRequest(port);
+  http.sendingPutRequest(port,s);
   }
   if (command.contentEquals("POST")) {   // Get the page, parse images and translate
 	  System.out.println("Processing POST command");
-  http.sendingPostRequest(port);
+  http.sendingPostRequest(port,s);
   }
  }
  // HTTP HEAD request
@@ -87,11 +88,11 @@ public class HttpURLConnectionExample {
 	 * 			The local directory to save the result and downloaded image files.
 	 * @throws 	...
 	 */
- private void sendingHeadRequest(String url,int port, String outputdir) throws Exception {
+ private void sendingHeadRequest(String url,int port, String outputdir, Socket s) throws Exception {
  
    
   // HttpURLConnection con = (HttpURLConnection) url.openConnection();
-  Socket s=new Socket(url,port);
+ 
   //// By default it is GET request
   //con.setRequestMethod("GET");
   PrintWriter out = new PrintWriter(s.getOutputStream(),true);
@@ -141,11 +142,10 @@ public class HttpURLConnectionExample {
 	
 }
  // HTTP GET request
- private void sendingGetRequest(String url,int port, String outputdir) throws Exception {
+ private void sendingGetRequest(String url,int port, String outputdir, Socket s) throws Exception {
  
    
   // HttpURLConnection con = (HttpURLConnection) url.openConnection();
-  Socket s=new Socket(url,port);
   //// By default it is GET request
   //con.setRequestMethod("GET");
   PrintWriter out = new PrintWriter(s.getOutputStream(),true);
@@ -249,11 +249,10 @@ public class HttpURLConnectionExample {
 	System.out.println("GET Webpage IS DONE");
 	
 }
- private void sendingGetRequestforImage(String url, String imagelocation, int port, String outputdir) throws Exception {
+ private void sendingGetRequestforImage(String url, String imagelocation, int port, String outputdir, Socket s) throws Exception {
 	 
 	  
 	  // HttpURLConnection con = (HttpURLConnection) url.openConnection();
-	  Socket s=new Socket(url,port);
 	  System.out.println("Sending get request : "+ url);
 	  PrintWriter out = new PrintWriter(s.getOutputStream(),true);
 	  System.out.println("Sending get request "+ url);
@@ -347,7 +346,7 @@ public class HttpURLConnectionExample {
 	 * 			The location on local disk to store the downloaded images
 	 * @throws 	...
 	 */
- private void findingimage(String fileName , String serverName, int port, String outputdir) throws Exception {
+ private void findingimage(String fileName , String serverName, int port, String outputdir, Socket s) throws Exception {
 	 File input = new File(fileName);
 	 Document doc = Jsoup.parse(input,"UTF-8",serverName);
 	 Elements img = doc.getElementsByTag("img");
@@ -373,7 +372,7 @@ public class HttpURLConnectionExample {
 				 }
 						 
 				 
-				 sendingGetRequestforImage(serverName, src, port, outputdir);
+				 sendingGetRequestforImage(serverName, src, port, outputdir,s);
 			 	} else
 			 	{
 			 		System.out.println("uri of images is empty, can not retreive image nbr "+counter);
@@ -391,103 +390,92 @@ public class HttpURLConnectionExample {
  /**
 	 * Execute the POST request.
 	 */
- private void sendingPostRequest(int port) throws Exception {
- 
-  Socket s=new Socket("localhost",80); 
-  DataOutputStream dout=new DataOutputStream(s.getOutputStream());  
-  PrintWriter out = new PrintWriter(s.getOutputStream(),true);
-  System.out.println("Sending POST request ");
-  out.println("POST / HTTP/1.1");
-  out.println("Host: " +"localhost" + ":"+port);
-  out.println(""); 
-	     
-        // Setting basic post request
- // con.setRequestMethod("POST");
-// con.setRequestProperty("User-Agent", USER_AGENT);
-// con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
-// con.setRequestProperty("Content-Type","application/json");
-  BufferedReader br=new BufferedReader(new InputStreamReader(System.in));
-  String str2 ="";
-  str2=br.readLine();  
-//  String postJsonData = "{"+"id"+":5"+","+"countryName"+":"+"USA"+","+"population"+":8000"+"}";
-  
-  // Send post request
-//  con.setDoOutput(true);
-  DataOutputStream wr = new DataOutputStream(s.getOutputStream());
-  wr.writeBytes(str2);
-  wr.flush();
-  wr.close();
- 
-  //int responseCode = con.getResponseCode();
-  System.out.println("Post Data : " + str2);
-//  System.out.println("Response Code : " + responseCode);
- 
-  BufferedReader in = new BufferedReader(
-          new InputStreamReader(s.getInputStream()));
-  String output;
-  StringBuffer response = new StringBuffer();
- 
-  while ((output = in.readLine()) != null) {
-   response.append(output);
-  }
-  System.out.println(response.toString());
-  System.out.println("closing");
-  in.close();
-  s.close(); 
-  
-  dout.close();  
-  System.out.println("closed");
-  //printing result from response
-  
-  System.out.println("POST IS DONE");
- }
- private void sendingPutRequest(int port) throws Exception {
-	 
-	  Socket s=new Socket("localhost",80); 
-	  DataOutputStream dout=new DataOutputStream(s.getOutputStream());  
+ private void sendingPostRequest(int port, Socket s) throws Exception {
+	  //Making connection to server
+	  //Reading in data
+	  BufferedReader in=new BufferedReader(new InputStreamReader(s.getInputStream()));
+	  BufferedReader br=new BufferedReader(new InputStreamReader(System.in));
+	  System.out.println("waiting for input");
+	  TimeUnit.SECONDS.sleep(10);
+	  String str2 ="testing";
+	  while (str2.equals("testing")) {
+	  str2=br.readLine();
+	  }
+	  // Sending to server
 	  PrintWriter out = new PrintWriter(s.getOutputStream(),true);
 	  System.out.println("Sending PUT request ");
+	  // Setting basic post request
+	  out.println("POST / HTTP/1.1");
+	  out.println("Host: " +"localhost" + ":"+port);
+	  out.println("Content-Type: String");
+	  out.println(" Content-Length: " + str2.length());
+	  out.println(""); 
+	  System.out.println("done with header");
+	  // Send post request
+	  out.println(str2);
+	  // Letting the server now request is done
+	  out.println(""); 
+	  out.println("done");
+	  System.out.println("Put Data : " + str2);
+	  //  System.out.println("Response Code : " + responseCode);
+
+	  //waiting for server response
+	  String st; 
+	  int k = 0;
+	  while((st = in.readLine()) != null){  
+		  if (st.equalsIgnoreCase("Received your message")) {
+			  System.out.println("Server received our message");
+             break;
+         }
+		k += 1;
+		System.out.println(k);
+	  }
+	  System.out.println("POST IS DONE");
+	 }
+ private void sendingPutRequest(int port, Socket s) throws Exception {
+	  //Making connection to server
+	  //Reading in data
+	  BufferedReader in=new BufferedReader(new InputStreamReader(s.getInputStream()));
+	  BufferedReader br=new BufferedReader(new InputStreamReader(System.in));
+	  System.out.println("waiting for input");
+	 // TimeUnit.SECONDS.sleep(10);
+	  String str2 ="testing";
+	  while (str2.equals("testing")) {
+	  str2=br.readLine();
+	  }
+	  // Sending to server
+	  PrintWriter out = new PrintWriter(s.getOutputStream(),true);
+	  System.out.println("Sending PUT request ");
+	  // Setting basic post request
 	  out.println("PUT / HTTP/1.1");
 	  out.println("Host: " +"localhost" + ":"+port);
+	  out.println("Content-Type: String");
+	  out.println(" Content-Length: " + str2.length());
 	  out.println(""); 
-		     
-	        // Setting basic post request
-	 // con.setRequestMethod("POST");
-	// con.setRequestProperty("User-Agent", USER_AGENT);
-	// con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
-	// con.setRequestProperty("Content-Type","application/json");
-	  BufferedReader br=new BufferedReader(new InputStreamReader(System.in));
-	  String str2 ="";
-	  str2=br.readLine();  
-	//  String postJsonData = "{"+"id"+":5"+","+"countryName"+":"+"USA"+","+"population"+":8000"+"}";
-	  
+	  System.out.println("done with header");
 	  // Send post request
-	//  con.setDoOutput(true);
-	  DataOutputStream wr = new DataOutputStream(s.getOutputStream());
-	  wr.writeBytes(str2);
-	  wr.flush();
-	  wr.close();
-	 
-	  //int responseCode = con.getResponseCode();
+	  out.println(str2);
+	  // Letting the server now request is done
+	  out.println(""); 
+	  out.println("done");
 	  System.out.println("Put Data : " + str2);
-	//  System.out.println("Response Code : " + responseCode);
-	 
-	  BufferedReader in = new BufferedReader(
-	          new InputStreamReader(s.getInputStream()));
-	  String output;
-	  StringBuffer response = new StringBuffer();
-	 
-	  while ((output = in.readLine()) != null) {
-	   response.append(output);
+	  //  System.out.println("Response Code : " + responseCode);
+
+	  //waiting for server response
+	  String st; 
+	  int k = 0;
+	  while((st = in.readLine()) != null){  
+		  if (st.equalsIgnoreCase("Received your message")) {
+			  System.out.println("Server received our message");
+              break;
+          }
+		k += 1;
+		System.out.println(k);
 	  }
-	  System.out.println(response.toString());
-	  System.out.println("closing");
-	  in.close();
-	  s.close();
-	  dout.close();  
-	  System.out.println("closed");
-	  //printing result from response
-	  
 	  System.out.println("PUT IS DONE");
 	 }
+ public static String slice_end(String s, int endIndex) {
+	    if (endIndex < 0) endIndex = s.length() + endIndex;
+	    return s.substring(0, endIndex);
+	}
 }

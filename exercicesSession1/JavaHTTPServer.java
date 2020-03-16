@@ -79,7 +79,9 @@ public class JavaHTTPServer implements Runnable{
 			while (true) {
 
 				JavaHTTPServer myServer = new JavaHTTPServer(serverConnect.accept());
-
+				
+				
+				
 				if (verbose) {
 
 					System.out.println("Connecton opened. (" + new Date() + ")");
@@ -161,7 +163,7 @@ public class JavaHTTPServer implements Runnable{
 
 				} catch (IOException ioe) {
 					try {
-						ServerError(out, dataOut, fileRequested);
+						ServerError(out, dataOut, "");
 					} catch (IOException e) {
 						System.err.println("Server error : " + ioe);
 					}
@@ -222,10 +224,20 @@ public class JavaHTTPServer implements Runnable{
 					}
 					}
 					else if (method.equals("PUT")) {
-						
+						try {
+							Put(connect,in,outputdir,out);
+						} catch (Exception e) {
+							System.out.println(e);
+							ServerError(out, dataOut, "PUT");
+						}
 					}
 					else if (method.equals("POST")) {
-						
+						try {
+							Post(in,outputdir,out);
+						} catch (Exception e) {
+							System.out.println(e);
+							ServerError(out, dataOut,"POST");
+						}
 					}
 				}else {
 					try {
@@ -234,7 +246,7 @@ public class JavaHTTPServer implements Runnable{
 
 					} catch (IOException ioe) {
 						try {
-							ServerError(out, dataOut, fileRequested);
+							ServerError(out, dataOut,"");
 						} catch (IOException e) {
 							System.err.println("Server error : " + ioe);
 						}
@@ -251,7 +263,7 @@ public class JavaHTTPServer implements Runnable{
 
 			} catch (IOException ioe) {
 				try {
-					ServerError(out, dataOut, fileRequested);
+					ServerError(out, dataOut,"");
 				} catch (IOException e) {
 					System.err.println("Server error : " + ioe);
 				}
@@ -260,7 +272,7 @@ public class JavaHTTPServer implements Runnable{
 			}
 		} catch (IOException ioe) {
 			try {
-				ServerError(out, dataOut, fileRequested);
+				ServerError(out, dataOut,"");
 			} catch (IOException e) {
 				System.err.println("Server error : " + ioe);
 			}
@@ -272,11 +284,11 @@ public class JavaHTTPServer implements Runnable{
 
 				in.close();
 
-				out.close();
+			//	out.close();
 
 				dataOut.close();
 
-				connect.close(); // we close socket connection
+			//	connect.close(); // we close socket connection
 
 			} catch (Exception e) {
 
@@ -455,7 +467,7 @@ public class JavaHTTPServer implements Runnable{
 
 		dataOut.flush();
 	}
-	private void ServerError(PrintWriter out, OutputStream dataOut, String fileRequested) throws IOException {
+	private void ServerError(PrintWriter out, OutputStream dataOut, String explanation) throws IOException {
 		// we return the not supported file to the client
 
 		File file = new File(WEB_ROOT, SERVER_ERROR);
@@ -472,7 +484,7 @@ public class JavaHTTPServer implements Runnable{
 
 		// we send HTTP Headers with data to client
 
-		out.println("HTTP/1.1 500 SERVER ERROR");
+		out.println("HTTP/1.1 500 SERVER ERROR " + explanation);
 
 		out.println("Server: Java HTTP Server from Robin and Quentin : 1.0");
 
@@ -492,41 +504,77 @@ public class JavaHTTPServer implements Runnable{
 
 		dataOut.flush();
 	}
-public static void Post(ServerSocket ss, Socket s, BufferedReader in , String outputdir)throws Exception{    
+public static void Post(BufferedReader in , String outputdir,PrintWriter out)throws Exception{   
+	System.out.println("in Postfunction");
 	String str="";  
 	StringBuffer response = new StringBuffer();
 	String st; 
-	  while ((st = in.readLine()) != null) {
+	  while (((st = in.readLine()) != null)) {
+		  if (st.equalsIgnoreCase("done")) {
+			  System.out.println("found done");
+              break;
+          }
 	    response.append(st); 
+	    response.append(System.getProperty("line.separator"));
 	  } 
-	while(!str.equals("stop")){  
-		str=response.toString();  
-		FileWriter myWriter = new FileWriter(outputdir + "Post");
-	    //myWriter.write("Files in Java might be tricky, but it is fun enough!");
-		myWriter.write(str);
-	    myWriter.close();
-	    System.out.println("Successfully wrote to the file.");
-		System.out.println("client says: "+str);  	
-	}  
+	System.out.println("out of while");
+	str=response.toString();  
+	System.out.println("client says: "+str);  
+	System.out.println("Saving in a file");
+	FileWriter myWriter = new FileWriter( outputdir + "Post" );
+	//myWriter.write("Files in Java might be tricky, but it is fun enough!");
+	myWriter.write(str);
+	myWriter.close();
+	System.out.println("Successfully wrote to the file.");
+	System.out.println("client said: "+str);  	
+	out.println("Received your message");
+	out.flush();
+	System.out.println("Done with request of client");
 	}
-public static void Put(ServerSocket ss, Socket s, BufferedReader in , String outputdir)throws Exception{    
+public static void Put(Socket s, BufferedReader in , String outputdir,PrintWriter out)throws Exception{ 
+	System.out.println("in putfunction");
 	String str="";  
 	StringBuffer response = new StringBuffer();
 	String st; 
-	  while ((st = in.readLine()) != null) {
+	int k = 0;
+	  while (((st = in.readLine()) != null)) {
+		  if (st.equalsIgnoreCase("done")) {
+			  System.out.println("found done");
+              break;
+          }
+		 k += 1;
+		 System.out.println(k);
+		//String test = slice_end(st,4);
+		//System.out.println(test);
 	    response.append(st); 
+	    response.append(System.getProperty("line.separator"));
+	    System.out.println(st);
+	    System.out.println(response);
 	  } 
+	System.out.println("out of while");
 	SocketAddress id =s.getRemoteSocketAddress();
-	while(!str.equals("stop")){  
-		str=response.toString();  
-		FileWriter myWriter = new FileWriter( outputdir + "Put" + id);
-	    //myWriter.write("Files in Java might be tricky, but it is fun enough!");
-		myWriter.write(str);
-	    myWriter.close();
-	    System.out.println("Successfully wrote to the file.");
-		System.out.println("client says: "+str);  	
-	}  
+	String id2 = id.toString().substring(1,id.toString().length());
+	System.out.println("socketid; " + id);
+	System.out.println("socketid2; " + id2);
+	str=response.toString();  
+	System.out.println("client says: "+str);  
+	System.out.println("Saving in a file");
+	FileWriter myWriter = new FileWriter( outputdir + "Put" + id2 ); // + id
+	//myWriter.write("Files in Java might be tricky, but it is fun enough!");
+	myWriter.write(str);
+	myWriter.close();
+	System.out.println("Successfully wrote to the file.");
+	System.out.println("client said: "+str);  	
+	out.println("Received your message");
+	out.flush();
+	System.out.println("Done with request of client");
+	}
+public static String slice_end(String s, int endIndex) {
+    if (endIndex < 0) endIndex = s.length() + endIndex;
+    if (endIndex > s.length()) endIndex = s.length();
+    return s.substring(0, endIndex);
 }
+
 	}
 	
 
