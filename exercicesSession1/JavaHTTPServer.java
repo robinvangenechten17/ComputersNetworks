@@ -6,7 +6,7 @@ import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
-
+import org.apache.commons.io.FilenameUtils;
 import java.io.FileInputStream;
 
 import java.io.FileNotFoundException;
@@ -18,13 +18,13 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 
 import java.io.PrintWriter;
-
+import java.io.StringReader;
 import java.net.ServerSocket;
 
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.util.Date;
-
+import java.util.Properties;
 import java.util.StringTokenizer;
 
 
@@ -34,7 +34,7 @@ import java.util.StringTokenizer;
 
 public class JavaHTTPServer implements Runnable{ 
 
-	static final File WEB_ROOT = new File(".");
+	static final File WEB_ROOT = new File("C:\\Users\\robin\\eclipse-workspace\\Computer Networks\\src2");
 
 	static final String DEFAULT_FILE = "htmlPages/index.html";
 
@@ -64,7 +64,7 @@ public class JavaHTTPServer implements Runnable{
 
 	}
 	//To store files 
-	String outputdir = "/Users/robin/eclipse-workspace/Computer Networks/src/";
+	String outputdir = "/Users/robin/eclipse-workspace/Computer Networks/src2/";
 
 	public static void main(String[] args) {
 
@@ -83,8 +83,8 @@ public class JavaHTTPServer implements Runnable{
 				
 				
 				if (verbose) {
-
-					System.out.println("Connecton opened. (" + new Date() + ")");
+					System.out.println("==========================================================================");
+					System.out.println("Connection opened. (" + new Date() + ")");
 
 				}
 
@@ -92,6 +92,8 @@ public class JavaHTTPServer implements Runnable{
 
 				Thread thread = new Thread(myServer);
 
+				System.out.println ("A connection was started on the server, Thread nbr " +thread.getId() + " is started to serve this client");
+				
 				thread.start();
 
 			}
@@ -108,14 +110,14 @@ public class JavaHTTPServer implements Runnable{
 
 	public void run() {
 
-		// we manage our particular client connection
+		// we manage our particular client connection, for as long as the connection is open
 
+		while (!(connect.isClosed())) {
 		BufferedReader in = null; PrintWriter out = null; BufferedOutputStream dataOut = null;
 
-		String fileRequested = null;
-
-		String Httpversion = null;
-
+		
+		Properties headerProp = new Properties() ; // for each new try of lecture, we make new properties
+		headerProp.setProperty("headerReceived","false");
 		try {
 
 			// we read characters from the client via input stream on the socket
@@ -131,175 +133,206 @@ public class JavaHTTPServer implements Runnable{
 			dataOut = new BufferedOutputStream(connect.getOutputStream());
 
 			// get first line of the request from the client
-
-			String input = in.readLine();
-
-			// we parse the request with a string tokenizer
-
-			StringTokenizer parse = new StringTokenizer(input);
-
-			String method = parse.nextToken().toUpperCase(); // we get the HTTP method of the client
-
-			// we get file requested
-
-			fileRequested = parse.nextToken().toLowerCase();
-
-			// we get the HTTP version used
+			String headerLine;  
 			
-			Httpversion = parse.nextToken().toUpperCase();
-
-			// we support only GET and HEAD methods, we check
-
-			if (!method.equals("GET")  &&  !method.equals("HEAD") && !method.equals("POST") && !method.equals("PUT") ) {
-
-				if (verbose) {
-
-					System.out.println("501 Not Implemented : " + method + " method.");
-
-				}
-				try {
-
-					MethodNotSupported(out, dataOut, fileRequested);
-
-				} catch (IOException ioe) {
-					try {
-						ServerError(out, dataOut, "");
-					} catch (IOException e) {
-						System.err.println("Server error : " + ioe);
-					}
-					System.err.println("Error with MethodNotSupported : " + ioe);
-
-				}
-			} else {
+			boolean firstline = true;
+			while ((headerLine = in.readLine())!=null) {
 				
-				if (Httpversion.equals("HTTP/1.1")){  
-					
-					// GET or HEAD method
-	
-					if ( fileRequested.endsWith("/")) {
-	
-						fileRequested += DEFAULT_FILE;
-	
+				headerProp.setProperty("headerReceived","true");
+				if (firstline) {
+					System.out.println("");
+					System.out.println("--- START OF HEADER ---");
+					System.out.println(headerLine);
+					String[] statusline=headerLine.split(" ",3);
+					headerProp.setProperty("method",statusline[0]);
+					headerProp.setProperty("fileRequested",statusline[1]);
+					headerProp.setProperty("Httpversion",statusline[2]);
+					firstline = false;
+				} else {
+					if (headerLine.isEmpty()) {
+						//headerProp.list(System.out);
+						System.out.println("--- END OF HEADER ---");
+						System.out.println("");
+						break;
+					} else // reading rest of header line by line
+					{
+						System.out.println(headerLine);
+						headerProp.load((new StringReader(headerLine)));
 					}
-					if (method.equals("GET")  ||  method.equals("HEAD")) {
-					File file = new File(WEB_ROOT, fileRequested);
+				}
+			}
+			
+			if (headerProp.getProperty("headerReceived")=="true") {
+			
+			
+			
+				// we support only GET and HEAD methods, we check
+				//while ( (input= in.readLine())!=null) {System.out.println(input);} // FUTURE DEV: threat rest of header, thrown away now
+				if (!headerProp.getProperty("method").equals("GET")  &&  !headerProp.getProperty("method").equals("HEAD") && !headerProp.getProperty("method").equals("POST") && !headerProp.getProperty("method").equals("PUT") ) {
 	
-					int fileLength = (int) file.length();
-	
-					String content = getContentType(fileRequested);
-	
-					if (method.equals("GET")) { // GET method so we return content
-	
-						byte[] fileData = readFileData(file, fileLength);
-	
-						
-	
-						// send HTTP Headers
-	
-						out.println("HTTP/1.1 200 OK");
-	
-						out.println("Server: Java HTTP Server from Quentin  and Robin : 1.0");
-	
-						out.println("Date: " + new Date());
-	
-						out.println("Content-type: " + content);
-	
-						out.println("Content-length: " + fileLength);
-	
-						out.println(); // blank line between headers and content, very important !
-	
-						out.flush(); // flush character output stream buffer
-	
-						
-	
-						dataOut.write(fileData, 0, fileLength);
-	
-						dataOut.flush();
-	
-					}
 					if (verbose) {
 	
-						System.out.println("File " + fileRequested + " of type " + content + " returned");
-	
+						System.out.println("501 Not Implemented : " + headerProp.getProperty("method") + " method.");
+						
 					}
-					}
-					else if (method.equals("PUT")) {
-						try {
-							Put(connect,in,outputdir,out);
-						} catch (Exception e) {
-							System.out.println(e);
-							ServerError(out, dataOut, "PUT");
-						}
-					}
-					else if (method.equals("POST")) {
-						try {
-							Post(in,outputdir,out);
-						} catch (Exception e) {
-							System.out.println(e);
-							ServerError(out, dataOut,"POST");
-						}
-					}
-				}else {
 					try {
-
-						BadRequest(out, dataOut, fileRequested);
-
+	
+						MethodNotSupported(out, dataOut, headerProp.getProperty("fileRequested"));
+	
 					} catch (IOException ioe) {
 						try {
-							ServerError(out, dataOut,"");
+							ServerError(out, dataOut, "");
 						} catch (IOException e) {
 							System.err.println("Server error : " + ioe);
 						}
-						System.err.println("Error with BadRequest : " + ioe);
-
+						System.err.println("Error with MethodNotSupported : " + ioe);
+	
+					}
+				} else {
+					
+					if (headerProp.getProperty("Httpversion").equals("HTTP/1.1")){  
+						
+						// GET or HEAD method
+		
+						if ( headerProp.getProperty("fileRequested").endsWith("/")) {
+		
+							headerProp.setProperty("fileRequested",  headerProp.getProperty("fileRequested") + DEFAULT_FILE);
+							
+		
+						}
+						if (headerProp.getProperty("method").equals("GET")  ||  headerProp.getProperty("method").equals("HEAD")) {
+						
+							File file = new File(WEB_ROOT,headerProp.getProperty("fileRequested"));
+		
+						int fileLength = (int) file.length();
+		
+						String content = getContentType(headerProp.getProperty("fileRequested"));
+		
+						if (headerProp.getProperty("method").equals("GET")) { // GET method so we return content
+		
+							byte[] fileData = readFileData(file, fileLength);
+		
+							
+		
+							// send HTTP Headers
+		
+							out.println("HTTP/1.1 200 OK");
+		
+							out.println("Server: Java HTTP Server from Quentin  and Robin : 1.0");
+		
+							out.println("Date: " + new Date());
+		
+							out.println("Content-type: " + content);
+		
+							out.println("Content-length: " + fileLength);
+		
+							out.println(); // blank line between headers and content, very important !
+		
+							out.flush(); // flush character output stream buffer
+		
+							dataOut.write(fileData, 0, fileLength);
+		
+							dataOut.flush();
+		
+						}
+						if (verbose) {
+		
+							System.out.println("File " + headerProp.getProperty("fileRequested") + " of type " + content + " returned");
+		
+						}
+						}
+						else if (headerProp.getProperty("method").equals("PUT")) {
+							try {
+								Put(connect,in,outputdir,out);
+							} catch (Exception e) {
+								System.out.println(e);
+								ServerError(out, dataOut, "PUT");
+							}
+						}
+						else if (headerProp.getProperty("method").equals("POST")) {
+							try {
+								Post(in,outputdir,out);
+							} catch (Exception e) {
+								System.out.println(e);
+								ServerError(out, dataOut,"POST");
+							}
+						}
+					}else {
+						try {
+	
+							BadRequest(out, dataOut, headerProp.getProperty("fileRequested"));
+	
+						} catch (IOException ioe) {
+							try {
+								ServerError(out, dataOut,"");
+							} catch (IOException e) {
+								System.err.println("Server error : " + ioe);
+							}
+							System.err.println("Error with BadRequest : " + ioe);
+	
+						}
 					}
 				}
 			}
-		} catch (FileNotFoundException fnfe) {
+		} 
+		catch (FileNotFoundException fnfe) {
 
 			try {
 
-				fileNotFound(out, dataOut, fileRequested);
+				fileNotFound(out, dataOut, headerProp.getProperty("fileRequested"));
 
-			} catch (IOException ioe) {
-				try {
-					ServerError(out, dataOut,"");
-				} catch (IOException e) {
-					System.err.println("Server error : " + ioe);
+				} catch (IOException ioe) {
+					try {
+						ServerError(out, dataOut,"");
+					} catch (IOException e) {
+						System.err.println("Server error : " + ioe);
+					}
+					System.err.println("Error with file not found exception : " + ioe.getMessage());
+
 				}
-				System.err.println("Error with file not found exception : " + ioe.getMessage());
-
-			}
-		} catch (IOException ioe) {
+			} 
+		catch (IOException ioe) {
 			try {
 				ServerError(out, dataOut,"");
-			} catch (IOException e) {
-				System.err.println("Server error : " + ioe);
-			}
+				} 
+				catch (IOException e) {
+					System.err.println("Server error : " + e);
+				}
 			System.err.println("Server error : " + ioe);
-
-		} finally {
+			
+			} 
+		
+		//catch (Exception e) {
+			//	System.err.println(" Server error : " + e);
+		//}
+		
+		finally {
 
 			try {
 
-				in.close();
+				//in.close();
+				
+				out.flush();
+				//out.close();
+				dataOut.flush();
+				//dataOut.close();
+			
 
-				out.close();
-
-				dataOut.close();
-
-				connect.close(); // we close socket connection
-
+				//connect.close(); // we close socket connection
+				
 			} catch (Exception e) {
 
-				System.err.println("Error closing stream : " + e.getMessage());
+				System.err.println("Error flushing stream : " + e.getMessage());
 
 			} 
-			if (verbose) {
-
-				System.out.println("Connection closed.\n");
-
+			
+		}
+		if (verbose) {
+			if (connect.isClosed()) {
+			System.out.println("Connection closed.\n");
 			}
+		}
+		
 		}
 	}
 

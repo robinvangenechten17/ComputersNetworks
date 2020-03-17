@@ -44,9 +44,12 @@ public class HttpURLConnectionExample {
   String host= "www.google.com";
   String command = "GET";
   String outputdir = "/Users/robin/eclipse-workspace/Computer Networks/src/";
+  String webpage = "/";
  switch (args.length){
+ 	case 6 :
+	 	outputdir = args[5];
  	case 5 :
-	 	outputdir = args[4];
+ 		webpage = args[4];
  	case 4 : 
  		language = args[3];
  	case 3 :
@@ -58,14 +61,17 @@ public class HttpURLConnectionExample {
  	default : break;
  }
  Socket s=new Socket(host,port);
+ PrintWriter out = new PrintWriter(s.getOutputStream(),true);
+ BufferedReader in = new BufferedReader(
+         new InputStreamReader(s.getInputStream()));
   if (command.contentEquals("GET")) {   // Get the page, parse images and translate
 	  System.out.println("Processing GET command");
-  http.sendingGetRequest(host, port, outputdir,s);
-  http.findingimage(outputdir +"GET_"+ host + ".HTML", host, port,outputdir,s);
+  http.sendingGetRequest(host, port, outputdir,s, webpage, out , in);
+  http.findingimage(outputdir +"GET_"+ host + ".HTML", host, port,outputdir,s,out);
   }
   if (command.contentEquals("HEAD")) {   // Get the page, parse images and translate
 	  System.out.println("Processing HEAD command");
-  http.sendingHeadRequest(host, port, outputdir,s);
+  http.sendingHeadRequest(host, port, outputdir,s, webpage, out, in);
   }
   if (command.contentEquals("PUT")) {   // Get the page, parse images and translate
 	  System.out.println("Processing PUT command");
@@ -75,6 +81,13 @@ public class HttpURLConnectionExample {
 	  System.out.println("Processing POST command");
   http.sendingPostRequest(port,s);
   }
+  
+  System.out.println("socket status closed= " + (s.isClosed()==true) +" => now closing connection");
+  s.close();
+  System.out.println("socket status closed= " + (s.isClosed()==true));
+  
+  in.close();
+  out.close();  
  }
  // HTTP HEAD request
  /**
@@ -88,25 +101,26 @@ public class HttpURLConnectionExample {
 	 * 			The local directory to save the result and downloaded image files.
 	 * @throws 	...
 	 */
- private void sendingHeadRequest(String url,int port, String outputdir, Socket s) throws Exception {
+ private void sendingHeadRequest(String url,int port, String outputdir, Socket s, String webpage, PrintWriter out, BufferedReader in) throws Exception {
  
    
   // HttpURLConnection con = (HttpURLConnection) url.openConnection();
  
   //// By default it is GET request
   //con.setRequestMethod("GET");
-  PrintWriter out = new PrintWriter(s.getOutputStream(),true);
+ // PrintWriter out = new PrintWriter(s.getOutputStream(),true);
   System.out.println("Sending get request "+ url);
-  out.println("HEAD / HTTP/1.1");
+  out.println("HEAD " +webpage +" HTTP/1.1");
   out.println("Host: " +url+ ":"+port);
+  out.println("Connection: keep-alive");
   out.println("");      
  
   
   
   // Reading response from input Stream
   StringBuffer response = new StringBuffer();
-  BufferedReader in = new BufferedReader(
-          new InputStreamReader(s.getInputStream()));
+ // BufferedReader in = new BufferedReader(
+ //         new InputStreamReader(s.getInputStream()));
   try { 
 	  s.setSoTimeout(5000);
 	  String output;
@@ -134,36 +148,37 @@ public class HttpURLConnectionExample {
   myWriter.close();
   //gaat opzoek naar image
   
-  in.close();
-  out.close();  
-	s.close();  
-	System.out.println("closed");
+  // in.close();
+  // out.close();  
+	//s.close();  
+	//System.out.println("closed");
 	System.out.println("GET Webpage IS DONE");
 	
 }
  // HTTP GET request
- private void sendingGetRequest(String url,int port, String outputdir, Socket s) throws Exception {
+ private void sendingGetRequest(String url,int port, String outputdir, Socket s, String webPage, PrintWriter out, BufferedReader in ) throws Exception {
  
    
   // HttpURLConnection con = (HttpURLConnection) url.openConnection();
   //// By default it is GET request
   //con.setRequestMethod("GET");
-  PrintWriter out = new PrintWriter(s.getOutputStream(),true);
+ // PrintWriter out = new PrintWriter(s.getOutputStream(),true);
   System.out.println("Sending get request "+ url);
-  out.println("GET / HTTP/1.1");
+  out.println("GET " + webPage +" HTTP/1.1");
   // remark, this implementation only gets root index file of the url
   out.println("Host: " +url+ ":" +port);
+  out.println("Connection: keep-alive");
   out.println("");      
  
   
   
   // Reading response from input Stream
   StringBuffer response = new StringBuffer();
-  BufferedReader in = new BufferedReader(
-          new InputStreamReader(s.getInputStream()));
+ // BufferedReader in = new BufferedReader(
+ //         new InputStreamReader(s.getInputStream()));
   try { 
 
-	  //s.setSoTimeout(5000);
+	  s.setSoTimeout(1000);
 
 	// TIMEOUT KAN TER VERVANGING VAN KIJKEN NAAR CHUNKS OF CONTENTH LENGTH;
 	// NORMAAL AANTAL BYTES BINNEN HALEN PER CHUNK EN CHECKEN OP VOLGENDE CHUNK TOT EEN CHUNK NUL IS 
@@ -195,18 +210,23 @@ public class HttpURLConnectionExample {
 						  System.out.println("--- END OF HEADER ---");
 					  } else // reading rest of header line by line
 					  {
+						  
 						  headerProp.load((new StringReader(output)));
+						 
 						  System.out.println(output);
 					  }
 				  }
 			  }
 			  else{
-				  if (headerProp.containsKey("Content-Length")) {
+				  if (headerProp.containsKey("Content-length")) {
 					  response.append(output);
 					  response.append(System.getProperty("line.separator"));
 				  } else {
 					  // Chuncked content
+					  
+					  
 					  chunkLength = Integer.parseInt(output,16);
+					  
 					  if (chunkLength > 0) {
 						  int counter = 0;
 						  while (counter < chunkLength) {
@@ -228,6 +248,7 @@ public class HttpURLConnectionExample {
 		  
   }
   catch (Exception e) {
+	  System.out.println(e);
 	  System.out.println("Time Out");
   }
   //printing result from response
@@ -242,22 +263,22 @@ public class HttpURLConnectionExample {
   myWriter.close();
   //gaat opzoek naar image
   
-  in.close();
-  out.close();  
-	s.close();  
-	System.out.println("closed");
+ // in.close();
+ // out.close();  
+	//s.close();  
+	//System.out.println("closed");
 	System.out.println("GET Webpage IS DONE");
 	
 }
- private void sendingGetRequestforImage(String url, String imagelocation, int port, String outputdir, Socket s) throws Exception {
+ private void sendingGetRequestforImage(String url, String imagelocation, int port, String outputdir, Socket s, PrintWriter out) throws Exception {
 	 
 	  
 	  // HttpURLConnection con = (HttpURLConnection) url.openConnection();
 	  System.out.println("Sending get request : "+ url);
-	  PrintWriter out = new PrintWriter(s.getOutputStream(),true);
-	  System.out.println("Sending get request "+ url);
+	
 	  out.println("GET " +imagelocation +" HTTP/1.1");
-	  out.println("Host: " +url+ ":"+port);
+	  out.println("Host: " +url +":"+port); 
+	  out.println("Connection: keep-alive");
 	  out.println(""); 
 	 
 	  // Create file to save the image (inlcuding a relative path)
@@ -270,7 +291,7 @@ public class HttpURLConnectionExample {
 	  
 	  try { 
 		  Properties headerProp = new Properties() ;
-	  	  s.setSoTimeout(500);
+	  	  s.setSoTimeout(5000);
 		  BufferedInputStream in = new BufferedInputStream(s.getInputStream());
 		  boolean header = true;
 		  byte[] readBytes = new byte[2048];
@@ -325,8 +346,8 @@ public class HttpURLConnectionExample {
 	  //gaat opzoek naar image
 	  
 	  
-	  out.close();  
-		s.close();
+	//  out.close();  
+	//	s.close();
 		imageFile.close();
 		System.out.println("ImageSize is: "+ newFile.length());
 		System.out.println("closed");
@@ -346,7 +367,7 @@ public class HttpURLConnectionExample {
 	 * 			The location on local disk to store the downloaded images
 	 * @throws 	...
 	 */
- private void findingimage(String fileName , String serverName, int port, String outputdir, Socket s) throws Exception {
+ private void findingimage(String fileName , String serverName, int port, String outputdir, Socket s , PrintWriter out  ) throws Exception {
 	 File input = new File(fileName);
 	 Document doc = Jsoup.parse(input,"UTF-8",serverName);
 	 Elements img = doc.getElementsByTag("img");
@@ -371,8 +392,8 @@ public class HttpURLConnectionExample {
 						 };
 				 }
 						 
-				 
-				 sendingGetRequestforImage(serverName, src, port, outputdir,s);
+				
+				 sendingGetRequestforImage(serverName, src, port, outputdir,s, out); 
 			 	} else
 			 	{
 			 		System.out.println("uri of images is empty, can not retreive image nbr "+counter);
