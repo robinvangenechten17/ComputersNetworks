@@ -32,7 +32,17 @@ import org.jsoup.select.Elements;
  */
 public class HttpURLConnectionExample {
  
- 
+	/**
+	 * Processes 4 different commands; HEAD GET PUT POST
+	 * @param args
+	 * 			command = args[0]
+	 * 			host = args[1]
+	 * 			Integer.parseInt(args[2])
+	 * 			language = args[3]
+	 * 			webpage = args[4]
+	 * 			outputdir = args[5]
+	 * @throws Exception
+	 */
  public static void main(String[] args) throws Exception {
   HttpURLConnectionExample http = new HttpURLConnectionExample();
   //Define Default Arguments
