@@ -66,6 +66,11 @@ public class JavaHTTPServer implements Runnable{
 	//To store files 
 	String outputdir = "/Users/robin/eclipse-workspace/Computer Networks/src2/";
 
+	/**
+	 * Processes 4 different commands serverside; HEAD GET PUT POST
+	 * multithreaded so multiple clients possible
+	 * @param args; no args
+	 */
 	public static void main(String[] args) {
 
 		try {
@@ -107,7 +112,12 @@ public class JavaHTTPServer implements Runnable{
 	}
 
 	@Override
-
+	/**
+	 * After every connection, this function will be executed
+	 * Methods; HEAD GET PUT POST
+	 * Supports HTTP/1.1 other -> Bad request
+	 * Returns 4 errors; Bad request, File not found, Method not supported, Server error
+	 */
 	public void run() {
 
 		// we manage our particular client connection, for as long as the connection is open
@@ -336,7 +346,15 @@ public class JavaHTTPServer implements Runnable{
 		}
 	}
 
-	
+	/**
+	 * Reads file data
+	 * @param file
+	 * 		  Giving file
+	 * @param fileLength
+	 * 		  Length of giving file
+	 * @return fileData; the data of the giving file
+	 * @throws IOException
+	 */
 
 	private byte[] readFileData(File file, int fileLength) throws IOException {
 
@@ -369,20 +387,36 @@ public class JavaHTTPServer implements Runnable{
 	
 
 	// return supported MIME Types
-
+	/**
+	 * Finds the type of file
+	 * @param fileRequested
+	 * 		  Client requested file
+	 * @return type of requested file
+	 */
 	private String getContentType(String fileRequested) {
 
 		if (fileRequested.endsWith(".htm")  ||  fileRequested.endsWith(".html"))
 
 			return "text/html";
 
-		else
-
-			return "text/plain";
+		else {
+	    System.out.println(fileRequested.substring(fileRequested.lastIndexOf(".") + 1));
+		String sort =fileRequested.substring(fileRequested.lastIndexOf(".") + 1);
+			return sort;
+		}
 
 	}
 
-	
+	/**
+	 * Sends error to client for file not found
+	 * @param out
+	 * 		  PrintWriter of outputstream
+	 * @param dataOut
+	 * 		  Buffered OutputStream of outputstream
+	 * @param fileRequested
+	 * 		  Requested file of client
+	 * @throws IOException
+	 */
 
 	private void fileNotFound(PrintWriter out, OutputStream dataOut, String fileRequested) throws IOException {
 
@@ -425,6 +459,17 @@ public class JavaHTTPServer implements Runnable{
 		}
 
 	}
+	
+	/**
+	 * Sends error to client for Bad Request
+	 * @param out
+	 * 		  PrintWriter of outputstream
+	 * @param dataOut
+	 * 		  Buffered OutputStream of outputstream
+	 * @param fileRequested
+	 * 		  Requested file of client
+	 * @throws IOException
+	 */
 	private void BadRequest(PrintWriter out, OutputStream dataOut, String fileRequested) throws IOException {
 		File file = new File(WEB_ROOT, BAD_REQUEST);
 
@@ -463,6 +508,17 @@ public class JavaHTTPServer implements Runnable{
 		
 
 	}
+	
+	/**
+	 * Sends error to client for Method not supported 
+	 * @param out
+	 * 		  PrintWriter of outputstream
+	 * @param dataOut
+	 * 		  Buffered OutputStream of outputstream
+	 * @param fileRequested
+	 * 		  Requested file of client
+	 * @throws IOException
+	 */
 	private void MethodNotSupported(PrintWriter out, OutputStream dataOut, String fileRequested) throws IOException {
 		// we return the not supported file to the client
 
@@ -500,6 +556,16 @@ public class JavaHTTPServer implements Runnable{
 
 		dataOut.flush();
 	}
+	/**
+	 * Sends error to client for server error
+	 * @param out
+	 * 		  PrintWriter of outputstream
+	 * @param dataOut
+	 * 		  Buffered OutputStream of outputstream
+	 * @param Explanation
+	 * 		  The explanation why an error in the server occurred
+	 * @throws IOException
+	 */
 	private void ServerError(PrintWriter out, OutputStream dataOut, String explanation) throws IOException {
 		// we return the not supported file to the client
 
@@ -537,6 +603,16 @@ public class JavaHTTPServer implements Runnable{
 
 		dataOut.flush();
 	}
+	/**
+	 * Handles the POST request of the client and stores them locally.
+	 * @param in
+	 * 		  BufferedReader of inputstream
+	 * @param outputdir
+	 * 		  Location to save information locally
+	 * @param out
+	 * 		  PrintWriter of outputstream
+	 * @throws Exception
+	 */
 public static void Post(BufferedReader in , String outputdir,PrintWriter out)throws Exception{   
 	System.out.println("in Postfunction");
 	String str="";  
@@ -573,6 +649,18 @@ public static void Post(BufferedReader in , String outputdir,PrintWriter out)thr
 	out.flush();
 	System.out.println("Done with request of client");
 	}
+/**
+ * Handles the PUT request of the client and stores them locally.
+ * @param s
+ * 		  Active socket; the client
+ * @param in
+ * 		  BufferedReader of inputstream
+ * @param outputdir
+ * 		  Location to save information locally
+ * @param out
+ * 		  PrintWriter of outputstream
+ * @throws Exception
+ */
 public static void Put(Socket s, BufferedReader in , String outputdir,PrintWriter out)throws Exception{ 
 	System.out.println("in putfunction");
 	String str="";  
@@ -612,6 +700,16 @@ public static void Put(Socket s, BufferedReader in , String outputdir,PrintWrite
 	out.flush();
 	System.out.println("Done with request of client");
 	}
+
+
+/**
+ * Slices a string; helpfunction
+ * @param s
+ * 		  String to slice
+ * @param endIndex
+ * 		  Place to slice
+ * @return
+ */
 public static String slice_end(String s, int endIndex) {
     if (endIndex < 0) endIndex = s.length() + endIndex;
     if (endIndex > s.length()) endIndex = s.length();

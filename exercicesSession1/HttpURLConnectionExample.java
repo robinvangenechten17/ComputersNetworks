@@ -31,9 +31,8 @@ import org.jsoup.select.Elements;
  * @author Robin Van Genechten en Quentin Stroobants
  */
 public class HttpURLConnectionExample {
- 
 	/**
-	 * Processes 4 different commands; HEAD GET PUT POST
+	 * Processes 4 different commands clientside; HEAD GET PUT POST
 	 * @param args
 	 * 			command = args[0]
 	 * 			host = args[1]
@@ -43,6 +42,7 @@ public class HttpURLConnectionExample {
 	 * 			outputdir = args[5]
 	 * @throws Exception
 	 */
+ 
  public static void main(String[] args) throws Exception {
   HttpURLConnectionExample http = new HttpURLConnectionExample();
   //Define Default Arguments
@@ -559,6 +559,16 @@ public class HttpURLConnectionExample {
 	  }
 	  System.out.println("PUT IS DONE");
 	 }
+ 
+ 
+ /**
+  * Slices a string; helpfunction
+  * @param s
+  * 		  String to slice
+  * @param endIndex
+  * 		  Place to slice
+  * @return
+  */
  public static String slice_end(String s, int endIndex) {
 	    if (endIndex < 0) endIndex = s.length() + endIndex;
 	    return s.substring(0, endIndex);
