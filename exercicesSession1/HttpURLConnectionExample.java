@@ -94,21 +94,24 @@ public class HttpURLConnectionExample {
 	 * Execute the HEAD request and saves them into local files.
 	 * 
 	 * @param 	url
-	 * 			The given url as a string.
+	 * 			The given url; the host as a string.
 	 * @param 	port
 	 * 			The given port , mostly 80.
 	 * @param 	outputdir
 	 * 			The local directory to save the result and downloaded image files.
-	 * @throws 	...
+	 * @param 	webpage
+	 * 			The webpage we like to search.
+	 * @param 	s
+	 * 			The active socket
+	 * @param 	out
+	 * 			The PrintWriter of outputstream
+	 * @param 	in
+	 * 			BufferedReader of inputstream
+	 * @throws 	Exception e
 	 */
  private void sendingHeadRequest(String url,int port, String outputdir, Socket s, String webpage, PrintWriter out, BufferedReader in) throws Exception {
  
-   
-  // HttpURLConnection con = (HttpURLConnection) url.openConnection();
  
-  //// By default it is GET request
-  //con.setRequestMethod("GET");
- // PrintWriter out = new PrintWriter(s.getOutputStream(),true);
   System.out.println("Sending get request "+ url);
   out.println("HEAD " +webpage +" HTTP/1.1");
   out.println("Host: " +url+ ":"+port);
@@ -143,19 +146,38 @@ public class HttpURLConnectionExample {
   
   FileWriter myWriter = new FileWriter(  outputdir + "HEAD" + url + ".HTML");
   
-  //schrijft heel de website naar een file
+  //schrijft naar een file
   myWriter.write(str);
   myWriter.close();
-  //gaat opzoek naar image
+ 
   
   // in.close();
   // out.close();  
 	//s.close();  
 	//System.out.println("closed");
-	System.out.println("GET Webpage IS DONE");
+	System.out.println("HEAD Webpage IS DONE");
 	
 }
  // HTTP GET request
+ /**
+	 * Execute the GET request and saves them into local files.
+	 * 
+	 * @param 	url
+	 * 			The given url; the host as a string.
+	 * @param 	port
+	 * 			The given port , mostly 80.
+	 * @param 	outputdir
+	 * 			The local directory to save the result and downloaded image files.
+	 * @param 	webPage
+	 * 			The webpage we like to search.
+	 * @param 	s
+	 * 			The active socket
+	 * @param 	out
+	 * 			The PrintWriter of outputstream
+	 * @param 	in
+	 * 			BufferedReader of inputstream
+	 * @throws 	Exception e
+	 */
  private void sendingGetRequest(String url,int port, String outputdir, Socket s, String webPage, PrintWriter out, BufferedReader in ) throws Exception {
  
    
@@ -270,6 +292,25 @@ public class HttpURLConnectionExample {
 	System.out.println("GET Webpage IS DONE");
 	
 }
+ /**
+	 * Execute the GET request for images and saves them into local files.
+	 * 
+	 * @param 	url
+	 * 			The given url; the host as a string.
+	 * @param 	imagelocation
+	 * 			The url of the imagelocation as a string
+	 * @param 	port
+	 * 			The given port , mostly 80.
+	 * @param 	outputdir
+	 * 			The local directory to save the result and downloaded image files.
+	 * @param 	s
+	 * 			The active socket
+	 * @param 	out
+	 * 			The PrintWriter of outputstream
+	 * @param 	in
+	 * 			BufferedReader of inputstream
+	 * @throws 	Exception e
+	 */
  private void sendingGetRequestforImage(String url, String imagelocation, int port, String outputdir, Socket s, PrintWriter out) throws Exception {
 	 
 	  
@@ -305,7 +346,7 @@ public class HttpURLConnectionExample {
 				else {
 					boolean imageNotFound = false;
 					for (int i =0; i < 2045; i++) {
-						if (readBytes[i]==13 && readBytes[i+1]==10 && readBytes[i+2]==13 && readBytes[i+3]==10   ) {
+						if (readBytes[i]==13 && readBytes[i+1]==10 && readBytes[i+2]==13 && readBytes[i+3]==10   ) { //EMPTY LINE
 							header = false; // found end of header
 							String imgheader = new String(Arrays.copyOfRange(readBytes, 0, i));
 							System.out.println ("----IMG HEADER ---");
@@ -365,7 +406,11 @@ public class HttpURLConnectionExample {
 	 * 			he given port , mostly 80.
 	 * @param 	outputdir
 	 * 			The location on local disk to store the downloaded images
-	 * @throws 	...
+	 * @param 	s
+	 * 			The active socket
+	 * @param 	out
+	 * 			The PrintWriter of outputstream
+	 * @throws 	Exception
 	 */
  private void findingimage(String fileName , String serverName, int port, String outputdir, Socket s , PrintWriter out  ) throws Exception {
 	 File input = new File(fileName);
@@ -410,6 +455,10 @@ public class HttpURLConnectionExample {
 
  /**
 	 * Execute the POST request.
+	 * @param 	port
+	 * 			the given port , mostly 80.
+	 * @param 	s
+	 * 			The active socket
 	 */
  private void sendingPostRequest(int port, Socket s) throws Exception {
 	  //Making connection to server
@@ -452,6 +501,13 @@ public class HttpURLConnectionExample {
 	  }
 	  System.out.println("POST IS DONE");
 	 }
+ /**
+	 * Execute the PUT request.
+	 * @param 	port
+	 * 			the given port , mostly 80.
+	 * @param 	s
+	 * 			The active socket
+	 */
  private void sendingPutRequest(int port, Socket s) throws Exception {
 	  //Making connection to server
 	  //Reading in data
