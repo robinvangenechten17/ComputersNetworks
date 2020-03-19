@@ -1,4 +1,4 @@
-//package Practicum;
+
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -47,7 +47,7 @@ public class HttpURLConnectionExample {
 	 */
  
  public static void main(String[] args) throws Exception {
-  checkArguments(args);
+	 checkArguments(args);
   HttpURLConnectionExample http = new HttpURLConnectionExample();
   //Define Default Arguments
   for (String s: args) {
@@ -55,11 +55,10 @@ public class HttpURLConnectionExample {
   }
   Boolean vertaling = true; //PUT ON TRUE FOR TRANSLATION; Takes alot of time
   String language = "NL"; //vertalen naar
-  String languageFrom = "NL"; //vertalen van
+  String languageFrom = ""; //vertalen van
   int port = 80;
   String host= "www.google.com";
-  String command = "GET"; 
-  //String outputdir = "/Users/Quentin/eclipse-workspace/Computer Networks/output/";
+  String command = "GET";
   String outputdir = "/Users/robin/eclipse-workspace/Computer Networks/src/";
   String webpage = "/";
  switch (args.length){
@@ -649,24 +648,10 @@ public class HttpURLConnectionExample {
      
      return response.toString();
  }
- 
- /**
-  * Slices a string; helpfunction
-  * @param s
-  * 		  String to slice
-  * @param endIndex
-  * 		  Place to slice
-  * @return
-  */
- public static String slice_end(String s, int endIndex) {
-	    if (endIndex < 0) endIndex = s.length() + endIndex;
-	    return s.substring(0, endIndex);
-	}
- 
  /**
   * Checks the arguments, throws an exception if they are wrong
   * @param arguments Arguments of the main function call.
- * @throws Exception When the nummber of args isn't right, command not supported and port not an int.
+ * @throws Exception When the number of args isn't right, command not supported and port not an int.
   */
  static void checkArguments(String[] arguments) throws Exception{
      if(arguments.length < 2 || arguments.length > 5){
@@ -687,6 +672,7 @@ public class HttpURLConnectionExample {
              throw new Exception("Command not supported.");
          }
      }
+     System.out.println("Check Arguments oke");
  }
  
  /**
@@ -710,4 +696,16 @@ public class HttpURLConnectionExample {
 	    return true;
 	}
  
+ /**
+  * Slices a string; helpfunction
+  * @param s
+  * 		  String to slice
+  * @param endIndex
+  * 		  Place to slice
+  * @return
+  */
+ public static String slice_end(String s, int endIndex) {
+	    if (endIndex < 0) endIndex = s.length() + endIndex;
+	    return s.substring(0, endIndex);
+	}
 }
