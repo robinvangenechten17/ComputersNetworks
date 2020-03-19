@@ -16,12 +16,15 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-
+import java.io.FileReader;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -49,7 +52,9 @@ public class HttpURLConnectionExample {
   for (String s: args) {
       System.out.println(s);
   }
-  String language = "NL";
+  Boolean vertaling = true; //PUT ON TRUE FOR TRANSLATION; Takes alot of time
+  String language = "NL"; //vertalen naar
+  String languageFrom = "NL"; //vertalen van
   int port = 80;
   String host= "www.google.com";
   String command = "GET";
@@ -90,6 +95,10 @@ public class HttpURLConnectionExample {
   if (command.contentEquals("POST")) {   // Get the page, parse images and translate
 	  System.out.println("Processing POST command");
   http.sendingPostRequest(port,s);
+  }
+  if (vertaling) {
+	  System.out.println("Processing Translation");
+  http.vertaler(outputdir, host, languageFrom, language);
   }
   
   System.out.println("socket status closed= " + (s.isClosed()==true) +" => now closing connection");
@@ -293,7 +302,13 @@ public class HttpURLConnectionExample {
   //schrijft heel de website naar een file
   myWriter.write(str);
   myWriter.close();
-  //gaat opzoek naar image
+  
+  FileWriter myWriter2 = new FileWriter( outputdir + "GET_" + url + ".txt");
+  
+  //schrijft heel de website naar een file
+  myWriter2.write(str);
+  myWriter2.close();
+  
   
  // in.close();
  // out.close();  
@@ -559,7 +574,79 @@ public class HttpURLConnectionExample {
 	  }
 	  System.out.println("PUT IS DONE");
 	 }
- 
+ /**
+  * Translates a webpage to a given language
+  * @param outputdir 
+  * 	   The places of our files and where we like to save the files to
+  * @param url
+  * 	   The webpage we like to translate
+  * @param taalfrom
+  * 	   The original language of the webpage
+  * @param taalTo
+  * 	   The language we like to translate the webpage to
+  * @throws IOException
+  */
+ public void vertaler(String outputdir , String url, String taalfrom , String taalTo) throws IOException {
+	 if (taalfrom.equals(taalTo)) {
+		return;
+	 }
+	 File file = new File(outputdir + "GET_" + url + ".txt");
+	 BufferedReader br = new BufferedReader(new FileReader(file));
+		StringBuffer str = new StringBuffer();
+		String output;
+		String vertalingoutput;
+		String taal1= taalfrom;
+		String taal2= taalTo;
+			 while ((output = br.readLine())!=null) {
+					//  System.out.println(output);
+				 try{ 
+					 vertalingoutput=translate(taal1, taal2, output.toString());
+					 str.append(vertalingoutput);
+					 str.append(System.getProperty("line.separator"));
+				 }
+				 catch(Exception e) {
+				//	 System.out.println(e);
+					 System.out.println("In deze lijn was niets te vertalen");
+					 str.append(output);
+					 str.append(System.getProperty("line.separator"));
+				 }
+						  }
+		String text =str.toString();	 
+		FileWriter myWriter = new FileWriter( outputdir + "VERTALER_" +"FROM"+taal1+"TO"+taal2 + url + ".HTML");
+		myWriter.write(text);
+		myWriter.close();
+  System.out.println("Translated text: " + text);
+	 }
+/**
+ *  
+ * @param langFrom 
+ * 		  The original language of the text
+ * @param langTo
+ * 		  The language we like the text to be
+ * @param text
+ * 		  String of text; example; a website
+ * @return
+ * @throws IOException
+ */
+ private static String translate(String langFrom, String langTo, String text) throws IOException {
+     // INSERT YOU URL HERE
+     String urlStr = "https://script.google.com/macros/s/AKfycbzQQmxNvc0FRtP0KxOyypAn70HLcOCW1mxlnYuytpuf6kb18oDW/exec" +
+             "?q=" + URLEncoder.encode(text, "UTF-8") +
+             "&target=" + langTo +
+             "&source=" + langFrom;
+     URL url = new URL(urlStr);
+     StringBuilder response = new StringBuilder();
+     HttpURLConnection con = (HttpURLConnection) url.openConnection();
+     BufferedReader in = new BufferedReader(new InputStreamReader(((HttpURLConnection) (new URL(urlStr)).openConnection()).getInputStream(), Charset.forName("UTF-8")));
+     con.setRequestProperty("User-Agent", "Mozilla/5.0");
+     String inputLine;
+     while ((inputLine = in.readLine()) != null) {
+         response.append(inputLine);
+     }
+     in.close();
+     
+     return response.toString();
+ }
  
  /**
   * Slices a string; helpfunction
