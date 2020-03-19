@@ -1,4 +1,4 @@
-
+//package Practicum;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -44,6 +44,7 @@ public class HttpURLConnectionExample {
 	 */
  
  public static void main(String[] args) throws Exception {
+  checkArguments(args);
   HttpURLConnectionExample http = new HttpURLConnectionExample();
   //Define Default Arguments
   for (String s: args) {
@@ -52,7 +53,8 @@ public class HttpURLConnectionExample {
   String language = "NL";
   int port = 80;
   String host= "www.google.com";
-  String command = "GET";
+  String command = "GET"; 
+  //String outputdir = "/Users/Quentin/eclipse-workspace/Computer Networks/output/";
   String outputdir = "/Users/robin/eclipse-workspace/Computer Networks/src/";
   String webpage = "/";
  switch (args.length){
@@ -573,4 +575,52 @@ public class HttpURLConnectionExample {
 	    if (endIndex < 0) endIndex = s.length() + endIndex;
 	    return s.substring(0, endIndex);
 	}
+ 
+ /**
+  * Checks the arguments, throws an exception if they are wrong
+  * @param arguments Arguments of the main function call.
+ * @throws Exception When the nummber of args isn't right, command not supported and port not an int.
+  */
+ static void checkArguments(String[] arguments) throws Exception{
+     if(arguments.length < 2 || arguments.length > 5){
+         System.out.println("Wrong number of arguments, max 5 min 2 args.");
+         throw new Exception("Wrong number of arguments, max 5 min 2 args.");
+     }
+
+     String command = arguments[0];
+     if( !(command.equals("GET")) & !(command.equals("HEAD"))& !(command.equals("PUT"))& !(command.equals("POST")) ){
+         System.out.println("Command not supported.");
+         throw new Exception("Command not supported.");
+     }
+
+     if (arguments.length > 2) {
+         String port = arguments[2];
+         if (!isInteger(port)) {
+             System.out.println("Port is not an integer");
+             throw new Exception("Command not supported.");
+         }
+     }
+ }
+ 
+ /**
+  * Checks if the given object is an integer.
+  * @param object Object to be checked
+  * @return Boolean that indicates if the object is an integer or not.
+  */
+ public static boolean isInteger(Object object) {
+		if(object instanceof Integer) {
+			return true;
+		} else {
+			String string = object.toString();
+			
+			try {
+				Integer.parseInt(string);
+			} catch(Exception e) {
+				return false;
+			}	
+		}
+	  
+	    return true;
+	}
+ 
 }
