@@ -312,23 +312,13 @@ public class JavaHTTPServer implements Runnable{
 			
 			} 
 		
-		//catch (Exception e) {
-			//	System.err.println(" Server error : " + e);
-		//}
 		
 		finally {
 
 			try {
 
-				//in.close();
-				
 				out.flush();
-				//out.close();
 				dataOut.flush();
-				//dataOut.close();
-			
-
-				//connect.close(); // we close socket connection
 				
 			} catch (Exception e) {
 

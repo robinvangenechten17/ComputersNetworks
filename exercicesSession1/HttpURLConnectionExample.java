@@ -54,8 +54,8 @@ public class HttpURLConnectionExample {
       System.out.println(s);
   }
   Boolean vertaling = true; //PUT ON TRUE FOR TRANSLATION; Takes alot of time
-  String language = "NL"; //vertalen naar
-  String languageFrom = ""; //vertalen van
+  String language = "NL"; //translate too
+  String languageFrom = ""; //translate from ; Empty String -> language will be detected
   int port = 80;
   String host= "www.google.com";
   String command = "GET";
@@ -142,8 +142,6 @@ public class HttpURLConnectionExample {
   
   // Reading response from input Stream
   StringBuffer response = new StringBuffer();
- // BufferedReader in = new BufferedReader(
- //         new InputStreamReader(s.getInputStream()));
   try { 
 	  s.setSoTimeout(5000);
 	  String output;
@@ -170,11 +168,6 @@ public class HttpURLConnectionExample {
   myWriter.write(str);
   myWriter.close();
  
-  
-  // in.close();
-  // out.close();  
-	//s.close();  
-	//System.out.println("closed");
 	System.out.println("HEAD Webpage IS DONE");
 	
 }
@@ -201,10 +194,7 @@ public class HttpURLConnectionExample {
  private void sendingGetRequest(String url,int port, String outputdir, Socket s, String webPage, PrintWriter out, BufferedReader in ) throws Exception {
  
    
-  // HttpURLConnection con = (HttpURLConnection) url.openConnection();
-  //// By default it is GET request
-  //con.setRequestMethod("GET");
- // PrintWriter out = new PrintWriter(s.getOutputStream(),true);
+  
   System.out.println("Sending get request "+ url);
   out.println("GET " + webPage +" HTTP/1.1");
   // remark, this implementation only gets root index file of the url
@@ -216,8 +206,6 @@ public class HttpURLConnectionExample {
   
   // Reading response from input Stream
   StringBuffer response = new StringBuffer();
- // BufferedReader in = new BufferedReader(
- //         new InputStreamReader(s.getInputStream()));
   try { 
 
 	  s.setSoTimeout(1000);
@@ -300,21 +288,16 @@ public class HttpURLConnectionExample {
   
   FileWriter myWriter = new FileWriter( outputdir + "GET_" + url + ".HTML");
   
-  //schrijft heel de website naar een file
+  //schrijft heel de website naar een file: HTML
   myWriter.write(str);
   myWriter.close();
   
   FileWriter myWriter2 = new FileWriter( outputdir + "GET_" + url + ".txt");
   
-  //schrijft heel de website naar een file
+  //schrijft heel de website naar een file: Txt file -> deze file wordt gebruikt bij vertalen
   myWriter2.write(str);
   myWriter2.close();
   
-  
- // in.close();
- // out.close();  
-	//s.close();  
-	//System.out.println("closed");
 	System.out.println("GET Webpage IS DONE");
 	
 }
@@ -339,8 +322,6 @@ public class HttpURLConnectionExample {
 	 */
  private void sendingGetRequestforImage(String url, String imagelocation, int port, String outputdir, Socket s, PrintWriter out) throws Exception {
 	 
-	  
-	  // HttpURLConnection con = (HttpURLConnection) url.openConnection();
 	  System.out.println("Sending get request : "+ url);
 	
 	  out.println("GET " +imagelocation +" HTTP/1.1");
@@ -348,7 +329,7 @@ public class HttpURLConnectionExample {
 	  out.println("Connection: keep-alive");
 	  out.println(""); 
 	 
-	  // Create file to save the image (inlcuding a relative path)
+	  // Create file to save the image (including a relative path)
 	  File newFile = new File(outputdir + imagelocation);
 	  newFile.getParentFile().mkdirs();
 	  newFile.createNewFile();
@@ -361,8 +342,9 @@ public class HttpURLConnectionExample {
 	  	  s.setSoTimeout(5000);
 		  BufferedInputStream in = new BufferedInputStream(s.getInputStream());
 		  boolean header = true;
-		  byte[] readBytes = new byte[2048];
+		  byte[] readBytes = new byte[2048]; //images have to be read in bytes 
 		  // ASSUMPTION: HEADER WILL NOT BE LONGER THEN 2048 ( or at least the New line empty line mark will not be broken in 2 by the 2048 mark)
+		  //HEADERS ARE NORMALLY NOT BIGGER THEN 2048; Otherwise increase new byte[]
 		  int counter;
 		  while ((counter = in.read(readBytes))!= -1) {
 				if (!header) { // Means header is ended
@@ -409,12 +391,6 @@ public class HttpURLConnectionExample {
 	  catch (Exception e) {
 		  System.out.println("Time Out");
 	  }
-	  //printing result from response
-	  //gaat opzoek naar image
-	  
-	  
-	//  out.close();  
-	//	s.close();
 		imageFile.close();
 		System.out.println("ImageSize is: "+ newFile.length());
 		System.out.println("closed");
