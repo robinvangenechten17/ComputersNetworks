@@ -1,5 +1,5 @@
 
-
+//OUR CLIENT : RESULT FOR LAB
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -33,7 +33,7 @@ import org.jsoup.select.Elements;
 /**
  * @author Robin Van Genechten en Quentin Stroobants
  */
-public class HttpURLConnectionExample {
+public class HttpClient_Translator {
 	/**
 	 * Processes 4 different commands clientside; HEAD GET PUT POST
 	 * @param args
@@ -48,7 +48,7 @@ public class HttpURLConnectionExample {
  
  public static void main(String[] args) throws Exception {
 	 checkArguments(args);
-  HttpURLConnectionExample http = new HttpURLConnectionExample();
+  HttpClient_Translator http = new HttpClient_Translator();
   //Define Default Arguments
   for (String s: args) {
       System.out.println(s);
@@ -248,12 +248,11 @@ public class HttpURLConnectionExample {
 				  }
 			  }
 			  else{
-				  if (headerProp.containsKey("Content-length")) {
+				  if (headerProp.containsKey("Content-length") || headerProp.containsKey("Content-Length")) {
 					  response.append(output);
 					  response.append(System.getProperty("line.separator"));
 				  } else {
 					  // Chuncked content
-					  
 					  
 					  chunkLength = Integer.parseInt(output,16);
 					  
